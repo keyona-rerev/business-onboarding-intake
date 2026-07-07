@@ -11,6 +11,7 @@
     --bg: #F0F7F7;
     --accent-a: #1A9E9E;
     --accent-b: #7C3AED;
+    --sparing-accent: #7C3AED;
     --font: 'Inter', system-ui, sans-serif;
   }
   * { box-sizing: border-box; }
@@ -90,7 +91,7 @@
   .field-card.field-card--empty { background: repeating-linear-gradient(135deg, #fafafa, #fafafa 8px, #f4f4f4 8px, #f4f4f4 16px); border-style: dashed; }
   .field-card.editing { cursor: default; background: #fff; border-color: var(--accent-b); }
   .field-card-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--body-text); margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
-  .req-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent-b); display: inline-block; }
+  .req-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--sparing-accent); display: inline-block; }
   .field-card-value { font-size: 14px; line-height: 1.45; color: var(--primary); }
   .field-card-value.empty { color: #b0b6ba; font-style: italic; }
   .field-card-value.upload-hint { color: var(--accent-b); font-weight: 600; font-style: normal; }
@@ -172,9 +173,10 @@
       </div>
       <div id="colorCandidates" class="color-candidates"></div>
       <div class="brand-row color-slots">
-        <label>Primary <input type="color" id="primaryColorInput" value="#1a9e9e"></label>
-        <label>Secondary <input type="color" id="secondaryColorInput" value="#7c3aed"></label>
-        <label>Accent <input type="color" id="accentColorInput" value="#0d1f2d"></label>
+        <label>Background <input type="color" id="colorBackgroundInput" value="#f0f7f7"></label>
+        <label>Accent <input type="color" id="colorAccentInput" value="#1a9e9e"></label>
+        <label>Highlight <input type="color" id="colorHighlightInput" value="#7c3aed"></label>
+        <label>Sparing accent <input type="color" id="colorSparingAccentInput" value="#0d1f2d"></label>
         <button id="saveColorsBtn">Save colors</button>
       </div>
       <div class="brand-row logo-row">
@@ -277,9 +279,10 @@
 
     function applyBrand(brand, businessName) {
       const root = document.documentElement.style;
-      if (brand.primaryColor) root.setProperty("--accent-a", brand.primaryColor);
-      if (brand.secondaryColor) root.setProperty("--accent-b", brand.secondaryColor);
-      else if (brand.accentColor) root.setProperty("--accent-b", brand.accentColor);
+      if (brand.backgroundColor) root.setProperty("--bg", brand.backgroundColor);
+      if (brand.accentColor) root.setProperty("--accent-a", brand.accentColor);
+      if (brand.highlightColor) root.setProperty("--accent-b", brand.highlightColor);
+      if (brand.sparingAccentColor) root.setProperty("--sparing-accent", brand.sparingAccentColor);
       if (brand.fontNames) root.setProperty("--font", brand.fontNames + ", 'Inter', system-ui, sans-serif");
 
       document.getElementById("bizName").textContent = businessName || "Your Dashboard";
@@ -302,9 +305,10 @@
         logoPreview.classList.add("hidden");
       }
 
-      if (brand.primaryColor) document.getElementById("primaryColorInput").value = brand.primaryColor;
-      if (brand.secondaryColor) document.getElementById("secondaryColorInput").value = brand.secondaryColor;
-      if (brand.accentColor) document.getElementById("accentColorInput").value = brand.accentColor;
+      if (brand.backgroundColor) document.getElementById("colorBackgroundInput").value = brand.backgroundColor;
+      if (brand.accentColor) document.getElementById("colorAccentInput").value = brand.accentColor;
+      if (brand.highlightColor) document.getElementById("colorHighlightInput").value = brand.highlightColor;
+      if (brand.sparingAccentColor) document.getElementById("colorSparingAccentInput").value = brand.sparingAccentColor;
     }
 
     function renderList() {
@@ -535,13 +539,14 @@
           el.innerHTML = data.candidates.map((c) => `<button type="button" class="swatch" style="background:${c.hex}" data-hex="${c.hex}" title="${c.hex}"></button>`).join("");
           let slot = 0;
           const slotInputs = [
-            document.getElementById("primaryColorInput"),
-            document.getElementById("secondaryColorInput"),
-            document.getElementById("accentColorInput"),
+            document.getElementById("colorBackgroundInput"),
+            document.getElementById("colorAccentInput"),
+            document.getElementById("colorHighlightInput"),
+            document.getElementById("colorSparingAccentInput"),
           ];
           el.querySelectorAll(".swatch").forEach((sw) => {
             sw.addEventListener("click", () => {
-              slotInputs[slot % 3].value = sw.dataset.hex;
+              slotInputs[slot % 4].value = sw.dataset.hex;
               slot++;
             });
           });
@@ -561,9 +566,10 @@
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            primaryColor: document.getElementById("primaryColorInput").value,
-            secondaryColor: document.getElementById("secondaryColorInput").value,
-            accentColor: document.getElementById("accentColorInput").value,
+            colorBackground: document.getElementById("colorBackgroundInput").value,
+            colorAccent: document.getElementById("colorAccentInput").value,
+            colorHighlight: document.getElementById("colorHighlightInput").value,
+            colorSparingAccent: document.getElementById("colorSparingAccentInput").value,
             websiteUrl: document.getElementById("websiteInput").value.trim() || null,
           }),
         });
