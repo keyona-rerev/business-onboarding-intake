@@ -22,16 +22,12 @@ exports.handler = async (event) => {
     await client.end();
   }
 
-  // Group fields by section in the order they're defined in fields.js,
-  // and compute a per-section completion percentage (required fields only,
-  // same rule completeness.js uses for the overall number — including the
-  // minimum-count bar for source_feeds, not just "non-empty").
   const sectionOrder = [];
   const sectionMap = {};
 
   for (const f of FIELDS) {
     if (!sectionMap[f.section]) {
-      sectionMap[f.section] = { name: f.section, fields: [], requiredTotal: 0, requiredFilled: 0 };
+      sectionMap[f.section] = { name: f.section, fields: [] };
       sectionOrder.push(f.section);
     }
     const value = record[f.key] || null;
@@ -43,19 +39,15 @@ exports.handler = async (event) => {
       value,
       filled,
     });
-    if (f.required) {
-      sectionMap[f.section].requiredTotal++;
-      if (filled) sectionMap[f.section].requiredFilled++;
-    }
   }
 
+  // Section completion counts every field in the section, required and
+  // optional alike — matches completeness.js. A section isn't "done" just
+  // because its required fields are filled; the optional ones count too.
   const sections = sectionOrder.map((name) => {
     const s = sectionMap[name];
-    // Sections with no required fields (e.g. Sources) are considered
-    // complete once any field in them has a value, otherwise 0.
-    const pct = s.requiredTotal > 0
-      ? Math.round((s.requiredFilled / s.requiredTotal) * 100)
-      : (s.fields.some((f) => f.filled) ? 100 : 0);
+    const filledCount = s.fields.filter((f) => f.filled).length;
+    const pct = Math.round((filledCount / s.fields.length) * 100);
     return { name: s.name, fields: s.fields, sectionPct: pct };
   });
 
