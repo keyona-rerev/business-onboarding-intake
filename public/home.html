@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Your Onboarding Dashboard</title>
+<style>
+  :root {
+    --primary: #0D1F2D;
+    --body-text: #3D5166;
+    --bg: #F0F7F7;
+    --accent-a: #1A9E9E;
+    --accent-b: #7C3AED;
+    --font: 'Inter', system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body { font-family: var(--font); background: var(--bg); color: var(--primary); margin: 0; }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 32px 20px 60px; }
+
+  header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+  .brandmark { display: flex; align-items: center; gap: 12px; }
+  .brandmark img { height: 36px; }
+  .brandmark h1 { font-size: 18px; margin: 0; }
+  .top-actions a { font-size: 13px; color: var(--body-text); text-decoration: none; margin-left: 16px; }
+  .top-actions a:hover { text-decoration: underline; }
+
+  .overview { background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); margin-bottom: 24px; }
+  .overview .pct { font-size: 28px; font-weight: 700; }
+  .bar-bg { background: #e5e5e5; border-radius: 6px; height: 10px; overflow: hidden; margin: 12px 0; }
+  .bar-fill { background: linear-gradient(90deg, var(--accent-a), var(--accent-b)); height: 100%; transition: width 0.3s; }
+  .overview .add-more { display: inline-block; margin-top: 8px; font-size: 13px; font-weight: 600; color: var(--accent-b); text-decoration: none; }
+
+  .view-toggle { display: flex; gap: 8px; margin-bottom: 20px; }
+  .view-toggle button {
+    padding: 8px 16px; border-radius: 999px; border: 1px solid #ddd; background: #fff;
+    color: var(--body-text); font-size: 13px; font-weight: 600; cursor: pointer;
+  }
+  .view-toggle button.active { background: linear-gradient(90deg, var(--accent-a), var(--accent-b)); color: #fff; border-color: transparent; }
+
+  /* List view */
+  .section-card { background: #fff; border-radius: 12px; padding: 20px 24px; margin-bottom: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.05); }
+  .section-card h3 { margin: 0 0 4px; font-size: 15px; }
+  .section-card .section-pct { font-size: 12px; color: var(--accent-a); font-weight: 600; margin-bottom: 12px; display: block; }
+  .field-row { padding: 8px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; }
+  .field-row:last-child { border-bottom: none; }
+  .field-row .label { color: var(--body-text); font-size: 12px; margin-bottom: 2px; }
+  .field-row .value { color: var(--primary); }
+  .field-row .value.empty { color: #b8b8b8; font-style: italic; }
+  .req-badge { font-size: 10px; color: var(--accent-b); font-weight: 700; margin-left: 6px; }
+
+  /* Gallery view */
+  .gallery { background: #fff; border-radius: 12px; padding: 32px; box-shadow: 0 2px 12px rgba(0,0,0,0.05); position: relative; }
+  .gallery-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .gallery-nav button { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--accent-b); padding: 4px 12px; }
+  .gallery-nav button:disabled { opacity: 0.25; cursor: default; }
+  .gallery-dots { display: flex; gap: 6px; justify-content: center; margin-top: 20px; }
+  .gallery-dots span { width: 8px; height: 8px; border-radius: 50%; background: #ddd; cursor: pointer; }
+  .gallery-dots span.active { background: var(--accent-b); }
+
+  /* Kanban view */
+  .kanban { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .kanban-col h4 { font-size: 13px; color: var(--body-text); margin-bottom: 10px; }
+  .kanban-card { background: #fff; border-radius: 10px; padding: 14px 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+  .kanban-card h5 { margin: 0 0 4px; font-size: 13px; }
+  .kanban-card .section-pct { font-size: 11px; color: var(--accent-a); font-weight: 600; }
+
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brandmark" id="brandmark">
+        <h1 id="bizName">Your Dashboard</h1>
+      </div>
+      <div class="top-actions">
+        <a href="/intake.html">Add more info</a>
+        <a href="#" id="logoutLink">Log out</a>
+      </div>
+    </header>
+
+    <div class="overview">
+      <div class="pct" id="pctLabel">0% complete</div>
+      <div class="bar-bg"><div class="bar-fill" id="barFill" style="width:0%"></div></div>
+      <a class="add-more" href="/intake.html">Fill in what's missing &rarr;</a>
+    </div>
+
+    <div class="view-toggle">
+      <button data-view="list" class="active">List</button>
+      <button data-view="gallery">Gallery</button>
+      <button data-view="kanban">Kanban</button>
+    </div>
+
+    <div id="listView"></div>
+    <div id="galleryView" class="hidden"></div>
+    <div id="kanbanView" class="hidden"></div>
+  </div>
+
+  <script>
+    let sections = [];
+    let galleryIndex = 0;
+
+    function applyBrand(brand, businessName) {
+      const root = document.documentElement.style;
+      if (brand.primaryColor) {
+        root.setProperty("--accent-a", brand.primaryColor);
+      }
+      if (brand.secondaryColor) {
+        root.setProperty("--accent-b", brand.secondaryColor);
+      } else if (brand.accentColor) {
+        root.setProperty("--accent-b", brand.accentColor);
+      }
+      if (brand.fontNames) {
+        root.setProperty("--font", brand.fontNames + ", 'Inter', system-ui, sans-serif");
+      }
+
+      const brandmark = document.getElementById("bizName");
+      if (brand.logoUrl) {
+        document.getElementById("brandmark").innerHTML =
+          `<img src="${brand.logoUrl}" alt="${businessName}" /><h1>${businessName}</h1>`;
+      } else {
+        brandmark.textContent = businessName || "Your Dashboard";
+      }
+    }
+
+    function renderList() {
+      const el = document.getElementById("listView");
+      el.innerHTML = sections.map((s) => `
+        <div class="section-card">
+          <h3>${s.name}</h3>
+          <span class="section-pct">${s.sectionPct}% complete</span>
+          ${s.fields.map((f) => `
+            <div class="field-row">
+              <div class="label">${f.label}${f.required ? '<span class="req-badge">REQUIRED</span>' : ''}</div>
+              <div class="value ${f.filled ? '' : 'empty'}">${f.filled ? f.value : 'Not yet provided'}</div>
+            </div>
+          `).join("")}
+        </div>
+      `).join("");
+    }
+
+    function renderGallery() {
+      const el = document.getElementById("galleryView");
+      const s = sections[galleryIndex];
+      if (!s) { el.innerHTML = ""; return; }
+      el.innerHTML = `
+        <div class="gallery">
+          <div class="gallery-nav">
+            <button id="prevBtn" ${galleryIndex === 0 ? "disabled" : ""}>&larr;</button>
+            <div>
+              <h3 style="margin:0">${s.name}</h3>
+              <span class="section-pct">${s.sectionPct}% complete</span>
+            </div>
+            <button id="nextBtn" ${galleryIndex === sections.length - 1 ? "disabled" : ""}>&rarr;</button>
+          </div>
+          ${s.fields.map((f) => `
+            <div class="field-row">
+              <div class="label">${f.label}${f.required ? '<span class="req-badge">REQUIRED</span>' : ''}</div>
+              <div class="value ${f.filled ? '' : 'empty'}">${f.filled ? f.value : 'Not yet provided'}</div>
+            </div>
+          `).join("")}
+          <div class="gallery-dots">
+            ${sections.map((_, i) => `<span class="${i === galleryIndex ? 'active' : ''}" data-i="${i}"></span>`).join("")}
+          </div>
+        </div>
+      `;
+      document.getElementById("prevBtn").addEventListener("click", () => { if (galleryIndex > 0) { galleryIndex--; renderGallery(); } });
+      document.getElementById("nextBtn").addEventListener("click", () => { if (galleryIndex < sections.length - 1) { galleryIndex++; renderGallery(); } });
+      el.querySelectorAll(".gallery-dots span").forEach((dot) => {
+        dot.addEventListener("click", () => { galleryIndex = parseInt(dot.dataset.i, 10); renderGallery(); });
+      });
+    }
+
+    function renderKanban() {
+      const el = document.getElementById("kanbanView");
+      const cols = {
+        "Not Started": sections.filter((s) => s.sectionPct === 0),
+        "In Progress": sections.filter((s) => s.sectionPct > 0 && s.sectionPct < 100),
+        "Complete": sections.filter((s) => s.sectionPct === 100),
+      };
+      el.innerHTML = `
+        <div class="kanban">
+          ${Object.entries(cols).map(([label, list]) => `
+            <div class="kanban-col">
+              <h4>${label} (${list.length})</h4>
+              ${list.map((s) => `
+                <div class="kanban-card">
+                  <h5>${s.name}</h5>
+                  <span class="section-pct">${s.sectionPct}% &middot; ${s.fields.filter(f => f.filled).length}/${s.fields.length} fields</span>
+                </div>
+              `).join("")}
+            </div>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    function switchView(view) {
+      document.getElementById("listView").classList.toggle("hidden", view !== "list");
+      document.getElementById("galleryView").classList.toggle("hidden", view !== "gallery");
+      document.getElementById("kanbanView").classList.toggle("hidden", view !== "kanban");
+      document.querySelectorAll(".view-toggle button").forEach((b) => {
+        b.classList.toggle("active", b.dataset.view === view);
+      });
+      if (view === "gallery") renderGallery();
+      if (view === "kanban") renderKanban();
+    }
+
+    document.querySelectorAll(".view-toggle button").forEach((btn) => {
+      btn.addEventListener("click", () => switchView(btn.dataset.view));
+    });
+
+    document.getElementById("logoutLink").addEventListener("click", async (e) => {
+      e.preventDefault();
+      document.cookie = "intake_session=; Max-Age=0; Path=/;";
+      window.location.href = "/";
+    });
+
+    async function load() {
+      const res = await fetch("/.netlify/functions/intake-data");
+      if (res.status === 401) { window.location.href = "/"; return; }
+      const data = await res.json();
+
+      applyBrand(data.brand, data.businessName);
+      document.getElementById("pctLabel").textContent = data.completenessPct + "% complete";
+      document.getElementById("barFill").style.width = data.completenessPct + "%";
+
+      sections = data.sections;
+      renderList();
+    }
+
+    load();
+  </script>
+</body>
+</html>
