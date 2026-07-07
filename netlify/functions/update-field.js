@@ -42,28 +42,21 @@ exports.handler = async (event) => {
   const client = new Client({ connectionString: session.connectionString, ssl: { rejectUnauthorized: false } });
   await client.connect();
 
-  let record;
+  let record, pct, missing;
   try {
     await ensureSchema(client);
     await client.query(`update intake_data set ${key} = $1, updated_at = now() where id = 1`, [value ?? null]);
     const { rows } = await client.query("select * from intake_data where id = 1");
     record = rows[0];
-  } finally {
-    await client.end();
-  }
 
-  const { pct, missing } = scoreRecord(record);
+    ({ pct, missing } = scoreRecord(record));
 
-  await client.connect().catch(() => {}); // no-op guard; client already ended above intentionally left connectionless below
-  const client2 = new Client({ connectionString: session.connectionString, ssl: { rejectUnauthorized: false } });
-  await client2.connect();
-  try {
-    await client2.query(
+    await client.query(
       "update intake_data set completeness_pct = $1, missing_fields = $2 where id = 1",
       [pct, JSON.stringify(missing.map((f) => ({ label: f.label, section: f.section, required: f.required })))]
     );
   } finally {
-    await client2.end();
+    await client.end();
   }
 
   await wayfinder
