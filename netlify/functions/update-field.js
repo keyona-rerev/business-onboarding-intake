@@ -1,7 +1,7 @@
 const { Client } = require("pg");
 const { createClient } = require("@supabase/supabase-js");
 const { sessionFromEvent } = require("./_lib/auth");
-const { FIELDS } = require("./_lib/fields");
+const { FIELDS, SOURCE_URL_KEYS, isValidUrl } = require("./_lib/fields");
 const { scoreRecord } = require("./_lib/scoring");
 const { ensureSchema } = require("./_lib/schema-ensure");
 
@@ -39,13 +39,20 @@ exports.handler = async (event) => {
     return { statusCode: 400, body: JSON.stringify({ error: "Unknown field" }) };
   }
 
+  // Source fields are strictly URLs — reject anything else outright rather
+  // than saving it and letting a bad value silently count as "done."
+  const trimmed = typeof value === "string" ? value.trim() : value;
+  if (SOURCE_URL_KEYS.has(key) && trimmed && !isValidUrl(trimmed)) {
+    return { statusCode: 400, body: JSON.stringify({ error: "That doesn't look like a URL. Enter a real web address." }) };
+  }
+
   const client = new Client({ connectionString: session.connectionString, ssl: { rejectUnauthorized: false } });
   await client.connect();
 
   let record, pct, missing;
   try {
     await ensureSchema(client);
-    await client.query(`update intake_data set ${key} = $1, updated_at = now() where id = 1`, [value ?? null]);
+    await client.query(`update intake_data set ${key} = $1, updated_at = now() where id = 1`, [trimmed ?? null]);
     const { rows } = await client.query("select * from intake_data where id = 1");
     record = rows[0];
 
