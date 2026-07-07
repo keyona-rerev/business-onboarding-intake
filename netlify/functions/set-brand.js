@@ -1,6 +1,12 @@
 const { Client } = require("pg");
+const { createClient } = require("@supabase/supabase-js");
 const { sessionFromEvent } = require("./_lib/auth");
 const { ensureSchema } = require("./_lib/schema-ensure");
+
+const wayfinder = createClient(
+  process.env.WAYFINDER_SUPABASE_URL,
+  process.env.WAYFINDER_SUPABASE_ANON_KEY
+);
 
 const HEX_RE = /^#(?:[0-9a-fA-F]{6}|[0-9a-fA-F]{3})$/;
 
@@ -53,6 +59,12 @@ exports.handler = async (event) => {
   } finally {
     await client.end();
   }
+
+  // Invalidate the dashboard cache — brand colors just changed.
+  await wayfinder
+    .from("business_intake_instances")
+    .update({ cached_payload: null, updated_at: new Date().toISOString() })
+    .eq("id", session.businessId);
 
   return { statusCode: 200, body: JSON.stringify({ success: true }) };
 };
