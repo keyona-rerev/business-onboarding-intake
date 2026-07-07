@@ -66,9 +66,12 @@ exports.handler = async (event) => {
     await client.end();
   }
 
+  // Invalidate the dashboard cache — the next read (this same client's
+  // own reload, or anyone else's) does one live fetch to repopulate it
+  // rather than risk serving a payload that's now out of date.
   await wayfinder
     .from("business_intake_instances")
-    .update({ completeness_pct: pct, updated_at: new Date().toISOString() })
+    .update({ completeness_pct: pct, updated_at: new Date().toISOString(), cached_payload: null })
     .eq("id", session.businessId);
 
   return {
