@@ -33,7 +33,7 @@
   .overview .pct { font-size: 30px; font-weight: 800; letter-spacing: -0.02em; }
   .overview .pct-sub { font-size: 13px; color: var(--body-text); margin-top: 2px; }
   .bar-bg { background: #e9edee; border-radius: 8px; height: 12px; overflow: hidden; margin: 14px 0 6px; }
-  .bar-fill { background: linear-gradient(90deg, var(--accent-a), var(--accent-b)); height: 100%; transition: width 0.4s ease; border-radius: 8px; }
+  .bar-fill { background: linear-gradient(90deg, var(--accent-a), var(--accent-b)); height: 100%; transition: width 0.4s ease, opacity 0.2s ease; border-radius: 8px; }
   .overview .add-more { display: inline-block; margin-top: 10px; font-size: 13px; font-weight: 600; color: var(--accent-b); text-decoration: none; }
 
   /* Brand panel — website color pull + logo upload */
@@ -171,9 +171,9 @@
     </header>
 
     <div class="overview">
-      <div class="pct" id="pctLabel">0% complete</div>
-      <div class="pct-sub" id="pctSub"></div>
-      <div class="bar-bg"><div class="bar-fill" id="barFill" style="width:0%"></div></div>
+      <div class="pct" id="pctLabel">Loading...</div>
+      <div class="pct-sub" id="pctSub">&nbsp;</div>
+      <div class="bar-bg"><div class="bar-fill" id="barFill" style="width:0%; opacity:0"></div></div>
       <a class="add-more" href="/intake.html">Fill in what's missing &rarr;</a>
     </div>
 
@@ -736,7 +736,9 @@
 
       applyBrand(data.brand, data.businessName);
       document.getElementById("pctLabel").textContent = data.completenessPct + "% complete";
-      document.getElementById("barFill").style.width = data.completenessPct + "%";
+      const barFillEl = document.getElementById("barFill");
+      barFillEl.style.width = data.completenessPct + "%";
+      barFillEl.style.opacity = 1;
       document.getElementById("pctSub").textContent = data.completenessPct === 100
         ? "Everything's filled in, required and optional."
         : "Required and optional fields both count toward this number.";
