@@ -1,6 +1,6 @@
 const { Client } = require("pg");
 const { sessionFromEvent } = require("./_lib/auth");
-const { FIELDS } = require("./_lib/fields");
+const { FIELDS, isFieldSatisfied } = require("./_lib/fields");
 
 // Powers the post-login dashboard. Unlike completeness.js (which only ever
 // reports what's *missing*), this returns every field's actual value so the
@@ -24,7 +24,8 @@ exports.handler = async (event) => {
 
   // Group fields by section in the order they're defined in fields.js,
   // and compute a per-section completion percentage (required fields only,
-  // same rule completeness.js uses for the overall number).
+  // same rule completeness.js uses for the overall number — including the
+  // minimum-count bar for source_feeds, not just "non-empty").
   const sectionOrder = [];
   const sectionMap = {};
 
@@ -34,7 +35,7 @@ exports.handler = async (event) => {
       sectionOrder.push(f.section);
     }
     const value = record[f.key] || null;
-    const filled = value !== null && value !== undefined && value !== "";
+    const filled = isFieldSatisfied(f, value);
     sectionMap[f.section].fields.push({
       key: f.key,
       label: f.label,
