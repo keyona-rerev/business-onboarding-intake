@@ -15,54 +15,88 @@
   }
   * { box-sizing: border-box; }
   body { font-family: var(--font); background: var(--bg); color: var(--primary); margin: 0; }
-  .wrap { max-width: 880px; margin: 0 auto; padding: 32px 20px 60px; }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 32px 20px 60px; }
 
   header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
   .brandmark { display: flex; align-items: center; gap: 12px; }
-  .brandmark img { height: 36px; }
-  .brandmark h1 { font-size: 18px; margin: 0; }
+  .brandmark img { height: 40px; width: 40px; border-radius: 10px; object-fit: cover; }
+  .brand-avatar {
+    height: 40px; width: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, var(--accent-a), var(--accent-b)); color: #fff; font-weight: 700; font-size: 16px;
+  }
+  .brandmark h1 { font-size: 19px; margin: 0; }
   .top-actions a { font-size: 13px; color: var(--body-text); text-decoration: none; margin-left: 16px; }
   .top-actions a:hover { text-decoration: underline; }
 
-  .overview { background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); margin-bottom: 24px; }
-  .overview .pct { font-size: 28px; font-weight: 700; }
-  .bar-bg { background: #e5e5e5; border-radius: 6px; height: 10px; overflow: hidden; margin: 12px 0; }
-  .bar-fill { background: linear-gradient(90deg, var(--accent-a), var(--accent-b)); height: 100%; transition: width 0.3s; }
-  .overview .add-more { display: inline-block; margin-top: 8px; font-size: 13px; font-weight: 600; color: var(--accent-b); text-decoration: none; }
+  .overview { background: #fff; border-radius: 16px; padding: 24px; box-shadow: 0 2px 16px rgba(0,0,0,0.06); margin-bottom: 24px; }
+  .overview .pct { font-size: 30px; font-weight: 800; letter-spacing: -0.02em; }
+  .overview .pct-sub { font-size: 13px; color: var(--body-text); margin-top: 2px; }
+  .bar-bg { background: #e9edee; border-radius: 8px; height: 12px; overflow: hidden; margin: 14px 0 6px; }
+  .bar-fill { background: linear-gradient(90deg, var(--accent-a), var(--accent-b)); height: 100%; transition: width 0.4s ease; border-radius: 8px; }
+  .overview .add-more { display: inline-block; margin-top: 10px; font-size: 13px; font-weight: 600; color: var(--accent-b); text-decoration: none; }
 
   .view-toggle { display: flex; gap: 8px; margin-bottom: 20px; }
   .view-toggle button {
-    padding: 8px 16px; border-radius: 999px; border: 1px solid #ddd; background: #fff;
-    color: var(--body-text); font-size: 13px; font-weight: 600; cursor: pointer;
+    padding: 9px 18px; border-radius: 999px; border: 1px solid #dde3e3; background: #fff;
+    color: var(--body-text); font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s;
   }
   .view-toggle button.active { background: linear-gradient(90deg, var(--accent-a), var(--accent-b)); color: #fff; border-color: transparent; }
 
-  /* List view */
-  .section-card { background: #fff; border-radius: 12px; padding: 20px 24px; margin-bottom: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.05); }
-  .section-card h3 { margin: 0 0 4px; font-size: 15px; }
-  .section-card .section-pct { font-size: 12px; color: var(--accent-a); font-weight: 600; margin-bottom: 12px; display: block; }
-  .field-row { padding: 8px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; }
-  .field-row:last-child { border-bottom: none; }
-  .field-row .label { color: var(--body-text); font-size: 12px; margin-bottom: 2px; }
-  .field-row .value { color: var(--primary); }
-  .field-row .value.empty { color: #b8b8b8; font-style: italic; }
-  .req-badge { font-size: 10px; color: var(--accent-b); font-weight: 700; margin-left: 6px; }
+  /* Section card shell (List + Gallery) */
+  .section-card { background: #fff; border-radius: 16px; padding: 24px; margin-bottom: 18px; box-shadow: 0 2px 16px rgba(0,0,0,0.05); }
+  .section-card-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 16px; }
+  .section-card-head h3 { margin: 0; font-size: 16px; }
+  .pct-pill {
+    font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+    background: rgba(26,158,158,0.12); color: var(--accent-a);
+  }
+  .pct-pill.pct-complete { background: rgba(26,158,158,0.18); }
+  .pct-pill.pct-empty { background: rgba(61,81,102,0.1); color: var(--body-text); }
+
+  /* Field cards — the actual "profile card" unit, reused everywhere */
+  .field-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+  .field-card {
+    border: 1px solid #e9edee; border-radius: 12px; padding: 14px 16px; background: #fbfdfd;
+    transition: box-shadow 0.15s, border-color 0.15s;
+  }
+  .field-card.field-card--empty { background: repeating-linear-gradient(135deg, #fafafa, #fafafa 8px, #f4f4f4 8px, #f4f4f4 16px); border-style: dashed; }
+  .field-card-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--body-text); margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+  .req-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent-b); display: inline-block; }
+  .field-card-value { font-size: 14px; line-height: 1.45; color: var(--primary); }
+  .field-card-value.empty { color: #b0b6ba; font-style: italic; }
 
   /* Gallery view */
-  .gallery { background: #fff; border-radius: 12px; padding: 32px; box-shadow: 0 2px 12px rgba(0,0,0,0.05); position: relative; }
-  .gallery-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
-  .gallery-nav button { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--accent-b); padding: 4px 12px; }
+  .gallery { background: #fff; border-radius: 16px; padding: 32px; box-shadow: 0 2px 16px rgba(0,0,0,0.05); }
+  .gallery-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; }
+  .gallery-nav button { background: #fff; border: 1px solid #dde3e3; border-radius: 999px; width: 36px; height: 36px; font-size: 16px; cursor: pointer; color: var(--accent-b); }
   .gallery-nav button:disabled { opacity: 0.25; cursor: default; }
-  .gallery-dots { display: flex; gap: 6px; justify-content: center; margin-top: 20px; }
+  .gallery-nav .gallery-title { text-align: center; }
+  .gallery-nav .gallery-title h3 { margin: 0 0 4px; font-size: 17px; }
+  .gallery-dots { display: flex; gap: 6px; justify-content: center; margin-top: 22px; }
   .gallery-dots span { width: 8px; height: 8px; border-radius: 50%; background: #ddd; cursor: pointer; }
   .gallery-dots span.active { background: var(--accent-b); }
 
   /* Kanban view */
   .kanban { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
   .kanban-col h4 { font-size: 13px; color: var(--body-text); margin-bottom: 10px; }
-  .kanban-card { background: #fff; border-radius: 10px; padding: 14px 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-  .kanban-card h5 { margin: 0 0 4px; font-size: 13px; }
-  .kanban-card .section-pct { font-size: 11px; color: var(--accent-a); font-weight: 600; }
+  .kanban-card {
+    background: #fff; border-radius: 12px; padding: 16px 18px; margin-bottom: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    cursor: pointer; border: 1px solid transparent; transition: box-shadow 0.15s, border-color 0.15s, transform 0.1s;
+  }
+  .kanban-card:hover { box-shadow: 0 4px 18px rgba(0,0,0,0.1); border-color: rgba(124,58,237,0.25); transform: translateY(-1px); }
+  .kanban-card h5 { margin: 0 0 6px; font-size: 14px; }
+  .kanban-card .kanban-meta { font-size: 12px; color: var(--accent-a); font-weight: 600; }
+  .kanban-card .kanban-hint { font-size: 11px; color: #b0b6ba; margin-top: 8px; }
+
+  /* Detail modal (Kanban click-through, also usable anywhere) */
+  .modal-backdrop {
+    position: fixed; inset: 0; background: rgba(13,31,45,0.45); display: flex; align-items: center; justify-content: center;
+    padding: 20px; z-index: 50;
+  }
+  .modal-box { background: #fff; border-radius: 18px; max-width: 640px; width: 100%; max-height: 85vh; overflow-y: auto; padding: 28px; }
+  .modal-box-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+  .modal-box-head h3 { margin: 0; font-size: 18px; }
+  .modal-close { background: #f0f0f0; border: none; border-radius: 50%; width: 32px; height: 32px; font-size: 15px; cursor: pointer; color: var(--body-text); }
 
   .hidden { display: none; }
 </style>
@@ -71,6 +105,7 @@
   <div class="wrap">
     <header>
       <div class="brandmark" id="brandmark">
+        <div class="brand-avatar" id="brandAvatar">?</div>
         <h1 id="bizName">Your Dashboard</h1>
       </div>
       <div class="top-actions">
@@ -81,6 +116,7 @@
 
     <div class="overview">
       <div class="pct" id="pctLabel">0% complete</div>
+      <div class="pct-sub" id="pctSub"></div>
       <div class="bar-bg"><div class="bar-fill" id="barFill" style="width:0%"></div></div>
       <a class="add-more" href="/intake.html">Fill in what's missing &rarr;</a>
     </div>
@@ -100,26 +136,53 @@
     let sections = [];
     let galleryIndex = 0;
 
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function pctPillClass(pct) {
+      if (pct === 100) return "pct-pill pct-complete";
+      if (pct === 0) return "pct-pill pct-empty";
+      return "pct-pill";
+    }
+
+    // The one field-card renderer, reused across List, Gallery, and the
+    // Kanban detail modal, so every view shows the same "profile card" unit.
+    function fieldCardHtml(f) {
+      const valueHtml = f.filled ? escapeHtml(f.value) : "Not yet provided";
+      return `
+        <div class="field-card ${f.filled ? '' : 'field-card--empty'}">
+          <div class="field-card-label">${escapeHtml(f.label)}${f.required ? '<span class="req-dot" title="Required"></span>' : ''}</div>
+          <div class="field-card-value ${f.filled ? '' : 'empty'}">${valueHtml}</div>
+        </div>
+      `;
+    }
+
+    function sectionFieldGridHtml(section) {
+      return `<div class="field-grid">${section.fields.map(fieldCardHtml).join("")}</div>`;
+    }
+
     function applyBrand(brand, businessName) {
       const root = document.documentElement.style;
-      if (brand.primaryColor) {
-        root.setProperty("--accent-a", brand.primaryColor);
-      }
-      if (brand.secondaryColor) {
-        root.setProperty("--accent-b", brand.secondaryColor);
-      } else if (brand.accentColor) {
-        root.setProperty("--accent-b", brand.accentColor);
-      }
-      if (brand.fontNames) {
-        root.setProperty("--font", brand.fontNames + ", 'Inter', system-ui, sans-serif");
-      }
+      if (brand.primaryColor) root.setProperty("--accent-a", brand.primaryColor);
+      if (brand.secondaryColor) root.setProperty("--accent-b", brand.secondaryColor);
+      else if (brand.accentColor) root.setProperty("--accent-b", brand.accentColor);
+      if (brand.fontNames) root.setProperty("--font", brand.fontNames + ", 'Inter', system-ui, sans-serif");
 
-      const brandmark = document.getElementById("bizName");
+      document.getElementById("bizName").textContent = businessName || "Your Dashboard";
+      const avatarSlot = document.getElementById("brandAvatar");
       if (brand.logoUrl) {
-        document.getElementById("brandmark").innerHTML =
-          `<img src="${brand.logoUrl}" alt="${businessName}" /><h1>${businessName}</h1>`;
+        const img = document.createElement("img");
+        img.src = brand.logoUrl;
+        img.alt = businessName || "";
+        avatarSlot.replaceWith(img);
       } else {
-        brandmark.textContent = businessName || "Your Dashboard";
+        avatarSlot.textContent = (businessName || "?").trim().charAt(0).toUpperCase();
       }
     }
 
@@ -127,14 +190,11 @@
       const el = document.getElementById("listView");
       el.innerHTML = sections.map((s) => `
         <div class="section-card">
-          <h3>${s.name}</h3>
-          <span class="section-pct">${s.sectionPct}% complete</span>
-          ${s.fields.map((f) => `
-            <div class="field-row">
-              <div class="label">${f.label}${f.required ? '<span class="req-badge">REQUIRED</span>' : ''}</div>
-              <div class="value ${f.filled ? '' : 'empty'}">${f.filled ? f.value : 'Not yet provided'}</div>
-            </div>
-          `).join("")}
+          <div class="section-card-head">
+            <h3>${escapeHtml(s.name)}</h3>
+            <span class="${pctPillClass(s.sectionPct)}">${s.sectionPct}% complete</span>
+          </div>
+          ${sectionFieldGridHtml(s)}
         </div>
       `).join("");
     }
@@ -147,18 +207,13 @@
         <div class="gallery">
           <div class="gallery-nav">
             <button id="prevBtn" ${galleryIndex === 0 ? "disabled" : ""}>&larr;</button>
-            <div>
-              <h3 style="margin:0">${s.name}</h3>
-              <span class="section-pct">${s.sectionPct}% complete</span>
+            <div class="gallery-title">
+              <h3>${escapeHtml(s.name)}</h3>
+              <span class="${pctPillClass(s.sectionPct)}">${s.sectionPct}% complete</span>
             </div>
             <button id="nextBtn" ${galleryIndex === sections.length - 1 ? "disabled" : ""}>&rarr;</button>
           </div>
-          ${s.fields.map((f) => `
-            <div class="field-row">
-              <div class="label">${f.label}${f.required ? '<span class="req-badge">REQUIRED</span>' : ''}</div>
-              <div class="value ${f.filled ? '' : 'empty'}">${f.filled ? f.value : 'Not yet provided'}</div>
-            </div>
-          `).join("")}
+          ${sectionFieldGridHtml(s)}
           <div class="gallery-dots">
             ${sections.map((_, i) => `<span class="${i === galleryIndex ? 'active' : ''}" data-i="${i}"></span>`).join("")}
           </div>
@@ -169,6 +224,25 @@
       el.querySelectorAll(".gallery-dots span").forEach((dot) => {
         dot.addEventListener("click", () => { galleryIndex = parseInt(dot.dataset.i, 10); renderGallery(); });
       });
+    }
+
+    function openSectionModal(sectionName) {
+      const s = sections.find((sec) => sec.name === sectionName);
+      if (!s) return;
+      const backdrop = document.createElement("div");
+      backdrop.className = "modal-backdrop";
+      backdrop.innerHTML = `
+        <div class="modal-box">
+          <div class="modal-box-head">
+            <h3>${escapeHtml(s.name)} <span class="${pctPillClass(s.sectionPct)}">${s.sectionPct}%</span></h3>
+            <button class="modal-close">&times;</button>
+          </div>
+          ${sectionFieldGridHtml(s)}
+        </div>
+      `;
+      backdrop.addEventListener("click", (e) => { if (e.target === backdrop) backdrop.remove(); });
+      backdrop.querySelector(".modal-close").addEventListener("click", () => backdrop.remove());
+      document.body.appendChild(backdrop);
     }
 
     function renderKanban() {
@@ -184,15 +258,19 @@
             <div class="kanban-col">
               <h4>${label} (${list.length})</h4>
               ${list.map((s) => `
-                <div class="kanban-card">
-                  <h5>${s.name}</h5>
-                  <span class="section-pct">${s.sectionPct}% &middot; ${s.fields.filter(f => f.filled).length}/${s.fields.length} fields</span>
+                <div class="kanban-card" data-section="${escapeHtml(s.name)}">
+                  <h5>${escapeHtml(s.name)}</h5>
+                  <span class="kanban-meta">${s.sectionPct}% &middot; ${s.fields.filter(f => f.filled).length}/${s.fields.length} fields</span>
+                  <div class="kanban-hint">Click to view details</div>
                 </div>
               `).join("")}
             </div>
           `).join("")}
         </div>
       `;
+      el.querySelectorAll(".kanban-card").forEach((card) => {
+        card.addEventListener("click", () => openSectionModal(card.dataset.section));
+      });
     }
 
     function switchView(view) {
@@ -224,6 +302,9 @@
       applyBrand(data.brand, data.businessName);
       document.getElementById("pctLabel").textContent = data.completenessPct + "% complete";
       document.getElementById("barFill").style.width = data.completenessPct + "%";
+      document.getElementById("pctSub").textContent = data.completenessPct === 100
+        ? "Everything's filled in, required and optional."
+        : "Required and optional fields both count toward this number.";
 
       sections = data.sections;
       renderList();
