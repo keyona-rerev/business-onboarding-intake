@@ -3,8 +3,6 @@
 // and intake-data (dashboard display), so all three can never silently
 // drift apart.
 
-const MIN_SOURCE_EXAMPLES = 3;
-
 const FIELDS = [
   { key: "business_name", label: "Business name", section: "Business Identity", required: true },
   { key: "business_description", label: "One-paragraph business description", section: "Business Identity", required: true },
@@ -24,18 +22,17 @@ const FIELDS = [
 
   { key: "tone_descriptors", label: "Tone descriptors (3-5 words)", section: "Voice & Hard Rules", required: true },
   { key: "words_to_avoid", label: "Words/phrases to avoid", section: "Voice & Hard Rules", required: false },
-  { key: "forbidden_claims", label: "Forbidden claims (required if regulated industry)", section: "Voice & Hard Rules", required: false },
+  { key: "forbidden_claims", label: "Forbidden claims (if in a regulated industry)", section: "Voice & Hard Rules", required: false },
 
   { key: "formats", label: "Content formats to publish", section: "Content Structure", required: true },
   { key: "content_lanes", label: "Content lanes / recurring themes (2-3)", section: "Content Structure", required: true },
   { key: "content_natures", label: "Content nature / classification tiers", section: "Content Structure", required: false },
 
-  {
-    key: "source_feeds",
-    label: `At least ${MIN_SOURCE_EXAMPLES} example sources (paste full articles or just drop the URLs) that show the kind of content the system should go after`,
-    section: "Sources",
-    required: true,
-  },
+  // Three discrete required URL fields instead of one lumped-together list —
+  // each is validated as an actual URL on save, nothing else is accepted.
+  { key: "source_url_1", label: "Source 1 (URL)", section: "Sources", required: true },
+  { key: "source_url_2", label: "Source 2 (URL)", section: "Sources", required: true },
+  { key: "source_url_3", label: "Source 3 (URL)", section: "Sources", required: true },
 
   { key: "posting_timezone", label: "Timezone", section: "Posting Defaults", required: true },
   { key: "posting_time", label: "Preferred posting time", section: "Posting Defaults", required: true },
@@ -44,9 +41,45 @@ const FIELDS = [
 
 const REQUIRED_FIELDS = FIELDS.filter((f) => f.required);
 
+const SOURCE_URL_KEYS = new Set(["source_url_1", "source_url_2", "source_url_3"]);
+
+// Deliberately generic starter taxonomy for "content nature" — the same
+// shape of categories any content-marketing program would recognize
+// (stat, framework, story, etc.), with anything Prismm-specific left out
+// since this list has to work for any business onboarded through this
+// tool, not just Prismm. Keyona can swap this for a business-specific list
+// at any time; it's just a starting point so clients aren't picking blind.
+const CONTENT_NATURE_OPTIONS = [
+  "Stat / Data Point",
+  "Field Note",
+  "Framework",
+  "Contrarian",
+  "Case Study",
+  "Trend Take",
+  "Explainer",
+  "Behind the Build",
+  "Story",
+  "Announcement",
+  "News Reaction",
+];
+
+// Accepts with or without a scheme (adds https:// before validating if
+// missing) so "sistergolfonline.com" and "https://sistergolfonline.com"
+// both pass, but plain text with no domain shape gets rejected outright.
+function isValidUrl(value) {
+  if (!value || typeof value !== "string") return false;
+  const candidate = /^https?:\/\//i.test(value) ? value : `https://${value}`;
+  try {
+    const parsed = new URL(candidate);
+    return /\./.test(parsed.hostname) && parsed.hostname.length > 3;
+  } catch {
+    return false;
+  }
+}
+
 // Values for list-shaped fields are stored as comma-separated strings (see
 // intake-submit's extraction prompt). This counts real entries, ignoring
-// stray commas/whitespace, so "3 items" actually means 3 items.
+// stray commas/whitespace.
 function countListEntries(raw) {
   if (!raw) return 0;
   return String(raw)
@@ -56,15 +89,22 @@ function countListEntries(raw) {
 }
 
 // Whether a field counts as "done" for completeness purposes. Almost every
-// field just needs a non-empty value, but source_feeds has its own bar:
-// Keyona wants a minimum number of example sources, not just one, so a
-// single pasted URL shouldn't read as "Sources: complete."
+// field just needs a non-empty value, but the three source fields have
+// their own bar: a real URL, not just any text.
 function isFieldSatisfied(field, value) {
   if (value === null || value === undefined || value === "") return false;
-  if (field.key === "source_feeds") {
-    return countListEntries(value) >= MIN_SOURCE_EXAMPLES;
+  if (SOURCE_URL_KEYS.has(field.key)) {
+    return isValidUrl(value);
   }
   return true;
 }
 
-module.exports = { FIELDS, REQUIRED_FIELDS, isFieldSatisfied, countListEntries, MIN_SOURCE_EXAMPLES };
+module.exports = {
+  FIELDS,
+  REQUIRED_FIELDS,
+  isFieldSatisfied,
+  countListEntries,
+  isValidUrl,
+  SOURCE_URL_KEYS,
+  CONTENT_NATURE_OPTIONS,
+};
