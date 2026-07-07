@@ -9,7 +9,10 @@ const FIELDS = [
   { key: "business_name", label: "Business name", section: "Business Identity", required: true },
   { key: "business_description", label: "One-paragraph business description", section: "Business Identity", required: true },
   { key: "industry", label: "Industry / business type", section: "Business Identity", required: true },
-  { key: "primary_color", label: "Primary brand color", section: "Business Identity", required: false },
+  { key: "color_background", label: "Background color", section: "Business Identity", required: false },
+  { key: "color_accent", label: "Accent color", section: "Business Identity", required: false },
+  { key: "color_highlight", label: "Highlight color", section: "Business Identity", required: false },
+  { key: "color_sparing_accent", label: "Sparing accent color", section: "Business Identity", required: false },
   { key: "logo_url", label: "Logo URL", section: "Business Identity", required: false },
   { key: "font_names", label: "Brand fonts", section: "Business Identity", required: false },
 
