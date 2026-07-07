@@ -40,8 +40,10 @@ create table if not exists intake_data (
   content_lanes text,
   content_natures text,
 
-  -- Sources
-  source_feeds text,
+  -- Sources (3 discrete required URLs, not one lumped-together list)
+  source_url_1 text,
+  source_url_2 text,
+  source_url_3 text,
 
   -- Posting Defaults
   posting_timezone text,
