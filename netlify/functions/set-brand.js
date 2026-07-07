@@ -4,9 +4,9 @@ const { ensureSchema } = require("./_lib/schema-ensure");
 
 const HEX_RE = /^#(?:[0-9a-fA-F]{6}|[0-9a-fA-F]{3})$/;
 
-// Saves brand colors and the website URL after the person has confirmed
-// (or hand-typed) them — extract-brand-colors.js only ever suggests
-// candidates, this is the one function that actually writes them.
+// Saves the 4 named brand colors and the website URL after the person has
+// confirmed (or hand-typed) them — extract-brand-colors.js only ever
+// suggests candidates, this is the one function that actually writes.
 exports.handler = async (event) => {
   if (event.httpMethod !== "POST") {
     return { statusCode: 405, body: "Method not allowed" };
@@ -23,8 +23,13 @@ exports.handler = async (event) => {
     return { statusCode: 400, body: JSON.stringify({ error: "Invalid request body" }) };
   }
 
-  const { primaryColor, secondaryColor, accentColor, websiteUrl } = body;
-  for (const [label, value] of [["primaryColor", primaryColor], ["secondaryColor", secondaryColor], ["accentColor", accentColor]]) {
+  const { colorBackground, colorAccent, colorHighlight, colorSparingAccent, websiteUrl } = body;
+  for (const [label, value] of [
+    ["colorBackground", colorBackground],
+    ["colorAccent", colorAccent],
+    ["colorHighlight", colorHighlight],
+    ["colorSparingAccent", colorSparingAccent],
+  ]) {
     if (value && !HEX_RE.test(value)) {
       return { statusCode: 400, body: JSON.stringify({ error: `${label} isn't a valid hex color` }) };
     }
@@ -36,13 +41,14 @@ exports.handler = async (event) => {
     await ensureSchema(client);
     await client.query(
       `update intake_data set
-         primary_color = coalesce($1, primary_color),
-         secondary_color = coalesce($2, secondary_color),
-         accent_color = coalesce($3, accent_color),
-         website_url = coalesce($4, website_url),
+         color_background = coalesce($1, color_background),
+         color_accent = coalesce($2, color_accent),
+         color_highlight = coalesce($3, color_highlight),
+         color_sparing_accent = coalesce($4, color_sparing_accent),
+         website_url = coalesce($5, website_url),
          updated_at = now()
        where id = 1`,
-      [primaryColor || null, secondaryColor || null, accentColor || null, websiteUrl || null]
+      [colorBackground || null, colorAccent || null, colorHighlight || null, colorSparingAccent || null, websiteUrl || null]
     );
   } finally {
     await client.end();
