@@ -1,6 +1,7 @@
 const { Client } = require("pg");
 const { sessionFromEvent } = require("./_lib/auth");
 const { FIELDS, isFieldSatisfied } = require("./_lib/fields");
+const { ensureSchema } = require("./_lib/schema-ensure");
 
 // Powers the post-login dashboard. Unlike completeness.js (which only ever
 // reports what's *missing*), this returns every field's actual value so the
@@ -16,6 +17,7 @@ exports.handler = async (event) => {
 
   let record;
   try {
+    await ensureSchema(client);
     const { rows } = await client.query("select * from intake_data where id = 1");
     record = rows[0];
   } finally {
@@ -57,6 +59,7 @@ exports.handler = async (event) => {
       businessName: record.business_name || session.businessName,
       status: record.status,
       completenessPct: record.completeness_pct || 0,
+      websiteUrl: record.website_url || null,
       brand: {
         primaryColor: record.primary_color || null,
         secondaryColor: record.secondary_color || null,
