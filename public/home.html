@@ -37,9 +37,26 @@
   .bar-fill { background: linear-gradient(90deg, var(--accent-a), var(--accent-b)); height: 100%; transition: width 0.4s ease, opacity 0.2s ease; border-radius: 8px; }
   .overview .add-more { display: inline-block; margin-top: 10px; font-size: 13px; font-weight: 600; color: var(--accent-b); text-decoration: none; }
 
+  /* Brand summary row — shown once brand is fully configured, replaces the full panel */
+  .brand-panel-summary {
+    background: #fff; border-radius: 16px; padding: 14px 20px; box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+    margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  }
+  .brand-summary-left { display: flex; align-items: center; gap: 10px; }
+  .brand-summary-logo { width: 32px; height: 32px; border-radius: 6px; object-fit: cover; }
+  .brand-summary-swatches { display: flex; gap: 4px; }
+  .brand-summary-swatches .color-swatch { width: 16px; height: 16px; }
+  .brand-summary-label { font-size: 13px; color: var(--body-text); font-weight: 600; }
+  .brand-summary-edit {
+    background: none; border: 1px solid #dde3e3; border-radius: 8px; padding: 7px 14px;
+    font-size: 12px; font-weight: 600; color: var(--accent-b); cursor: pointer;
+  }
+
   /* Brand panel — website color pull + logo upload */
   .brand-panel { background: #fff; border-radius: 16px; padding: 22px 24px; box-shadow: 0 2px 16px rgba(0,0,0,0.06); margin-bottom: 24px; }
+  .brand-panel-head { display: flex; align-items: center; justify-content: space-between; }
   .brand-panel h3 { margin: 0 0 4px; font-size: 15px; }
+  .brand-collapse-link { background: none; border: none; color: var(--body-text); font-size: 12px; cursor: pointer; text-decoration: underline; }
   .brand-panel .brand-sub { font-size: 13px; color: var(--body-text); margin: 0 0 16px; }
   .brand-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
   .brand-row input[type="url"] { flex: 1; min-width: 200px; padding: 10px 12px; border: 1px solid #dde3e3; border-radius: 8px; font-size: 13px; font-family: inherit; }
@@ -199,8 +216,22 @@
       <a class="add-more" href="/intake.html">Fill in what's missing &rarr;</a>
     </div>
 
-    <div class="brand-panel">
-      <h3>Brand — website &amp; logo</h3>
+    <!-- Shown once brand (all 4 colors + logo) is fully configured — a
+         one-line summary instead of the full panel eating space forever. -->
+    <div class="brand-panel-summary hidden" id="brandPanelSummary">
+      <div class="brand-summary-left">
+        <img class="brand-summary-logo" id="brandSummaryLogo" alt="Logo" />
+        <div class="brand-summary-swatches" id="brandSummarySwatches"></div>
+        <span class="brand-summary-label">Brand configured</span>
+      </div>
+      <button type="button" class="brand-summary-edit" id="expandBrandBtn">Edit brand</button>
+    </div>
+
+    <div class="brand-panel" id="brandPanelFull">
+      <div class="brand-panel-head">
+        <h3>Brand — website &amp; logo</h3>
+        <button type="button" class="brand-collapse-link hidden" id="collapseBrandBtn">Collapse</button>
+      </div>
       <p class="brand-sub">Drop in your website and we'll pull some color guesses to confirm. Upload your own logo file directly, we don't try to scrape that part.</p>
       <div class="brand-row">
         <input type="url" id="websiteInput" placeholder="https://yourbusiness.com" />
@@ -226,9 +257,9 @@
 
     <div class="toolbar-row">
       <div class="view-toggle">
-        <button data-view="list" class="active">List</button>
+        <button data-view="list">List</button>
         <button data-view="gallery">Gallery</button>
-        <button data-view="kanban">Kanban</button>
+        <button data-view="kanban" class="active">Kanban</button>
       </div>
       <div class="legend"><span class="req-dot"></span> Required field</div>
     </div>
@@ -238,15 +269,19 @@
       <button id="discardAllBtn" type="button">Discard all unsaved edits</button>
     </div>
 
-    <div id="listView"></div>
+    <div id="listView" class="hidden"></div>
     <div id="galleryView" class="hidden"></div>
-    <div id="kanbanView" class="hidden"></div>
+    <div id="kanbanView"></div>
   </div>
 
   <script>
     let sections = [];
     let galleryIndex = 0;
-    let currentView = "list";
+    // Kanban is the default — it's the view that actually surfaces what
+    // still needs attention, rather than showing every section (done or
+    // not) with equal visual weight.
+    let currentView = "kanban";
+    let brandManuallyExpanded = false;
 
     const FONT_OPTIONS = [
       "Inter", "Roboto", "Open Sans", "Lato", "Montserrat", "Poppins", "Nunito",
@@ -278,8 +313,6 @@
     const COLOR_KEYS = new Set(["color_background", "color_accent", "color_highlight", "color_sparing_accent"]);
     const CHECKBOX_FIELD_OPTIONS = { content_natures: CONTENT_NATURE_OPTIONS, formats: FORMAT_OPTIONS };
     const SELECT_FIELD_OPTIONS = { posting_timezone: TIMEZONE_OPTIONS, posting_cadence: CADENCE_OPTIONS };
-    // Paragraph-length fields get a proper modal to edit in, not a cramped
-    // 3-row textarea squeezed into a 220px card.
     const LONG_TEXT_KEYS = new Set(["business_description", "audience_pain_points", "fit_criteria"]);
 
     function escapeHtml(str) {
@@ -319,10 +352,6 @@
       return null;
     }
 
-    // The one field-card renderer, reused across List, Gallery, and the
-    // Kanban detail modal. A few keys get special rendering: logo_url is a
-    // thumbnail, source URLs are clickable links, content_natures/formats
-    // show as chips, colors show as an actual swatch instead of raw hex text.
     function fieldCardHtml(f) {
       if (f.key === "logo_url") {
         const inner = f.filled
@@ -397,7 +426,35 @@
       if (brand.accentColor) document.getElementById("colorAccentInput").value = brand.accentColor;
       if (brand.highlightColor) document.getElementById("colorHighlightInput").value = brand.highlightColor;
       if (brand.sparingAccentColor) document.getElementById("colorSparingAccentInput").value = brand.sparingAccentColor;
+
+      // Once brand is fully set (all 4 colors + logo), collapse the whole
+      // panel into a one-line summary — it's a set-once thing, it shouldn't
+      // permanently occupy the top of every visit once it's done its job.
+      const configured = !!(brand.logoUrl && brand.backgroundColor && brand.accentColor && brand.highlightColor && brand.sparingAccentColor);
+      document.getElementById("collapseBrandBtn").classList.toggle("hidden", !configured);
+
+      const showSummary = configured && !brandManuallyExpanded;
+      document.getElementById("brandPanelFull").classList.toggle("hidden", showSummary);
+      document.getElementById("brandPanelSummary").classList.toggle("hidden", !showSummary);
+
+      if (configured) {
+        document.getElementById("brandSummaryLogo").src = brand.logoUrl;
+        document.getElementById("brandSummarySwatches").innerHTML = [
+          brand.backgroundColor, brand.accentColor, brand.highlightColor, brand.sparingAccentColor,
+        ].map((c) => `<span class="color-swatch" style="background:${escapeHtml(c)}"></span>`).join("");
+      }
     }
+
+    document.getElementById("expandBrandBtn").addEventListener("click", () => {
+      brandManuallyExpanded = true;
+      document.getElementById("brandPanelSummary").classList.add("hidden");
+      document.getElementById("brandPanelFull").classList.remove("hidden");
+    });
+    document.getElementById("collapseBrandBtn").addEventListener("click", () => {
+      brandManuallyExpanded = false;
+      document.getElementById("brandPanelFull").classList.add("hidden");
+      document.getElementById("brandPanelSummary").classList.remove("hidden");
+    });
 
     function renderList() {
       const el = document.getElementById("listView");
@@ -508,9 +565,6 @@
       btn.addEventListener("click", () => switchView(btn.dataset.view));
     });
 
-    // Tracks whether any card elsewhere on the page is mid-edit, so
-    // Cancel-on-one-card never has to guess whether it's safe to fully
-    // re-render (it isn't, if something else is unsaved).
     function updateUnsavedBar() {
       const count = document.querySelectorAll(".field-card.editing").length;
       document.getElementById("unsavedBar").classList.toggle("hidden", count === 0);
@@ -519,16 +573,12 @@
       renderCurrentView();
     });
 
-    // Reverts ONE card back to its display state, using the last-loaded
-    // value — never touches any other card that might also be mid-edit.
     function cancelEdit(card, key) {
       const field = findFieldByKey(key);
       card.outerHTML = fieldCardHtml(field);
       updateUnsavedBar();
     }
 
-    // Click-to-edit, delegated so it works whether the card is in the List,
-    // a Gallery slide, or a Kanban detail modal appended later.
     document.addEventListener("click", (e) => {
       const card = e.target.closest(".field-card");
       if (!card || card.classList.contains("editing")) return;
@@ -557,31 +607,26 @@
         updateUnsavedBar();
         return;
       }
-
       if (CHECKBOX_FIELD_OPTIONS[key]) {
         renderCheckboxEdit(card, field, CHECKBOX_FIELD_OPTIONS[key]);
         updateUnsavedBar();
         return;
       }
-
       if (SELECT_FIELD_OPTIONS[key]) {
         renderSelectEdit(card, field, SELECT_FIELD_OPTIONS[key]);
         updateUnsavedBar();
         return;
       }
-
       if (key === "posting_time") {
         renderTimeEdit(card, field);
         updateUnsavedBar();
         return;
       }
-
       if (COLOR_KEYS.has(key)) {
         renderColorEdit(card, field);
         updateUnsavedBar();
         return;
       }
-
       if (SOURCE_URL_KEYS.has(key)) {
         renderUrlEdit(card, field);
         updateUnsavedBar();
@@ -790,10 +835,6 @@
       });
     }
 
-    // Paragraph-length fields open here instead of a cramped inline
-    // textarea. Only one modal at a time — opening this one closes any
-    // Kanban detail modal already on screen, same assumption saveField
-    // already makes about "the" modal-backdrop.
     function openLongTextModal(field) {
       const existing = document.querySelector(".modal-backdrop");
       if (existing) existing.remove();
@@ -852,8 +893,6 @@
         return;
       }
 
-      // Close any open modal (Kanban detail or the long-text editor) — the
-      // underlying view refreshes via load(), reopening isn't necessary.
       const modal = document.querySelector(".modal-backdrop");
       if (modal) modal.remove();
       await load();
@@ -966,9 +1005,6 @@
       renderCurrentView();
     }
 
-    // Cache-first paint, then a silent background check against the real
-    // data. Only re-renders if something actually changed, and never while
-    // a card is mid-edit (that would blow away unsaved work).
     async function load() {
       const res = await fetch("/.netlify/functions/intake-data");
       if (res.status === 401) { window.location.href = "/"; return; }
