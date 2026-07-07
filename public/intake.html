@@ -2,119 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Business Setup — Intake</title>
-<style>
-  body { font-family: 'Inter', system-ui, sans-serif; background: #F0F7F7; color: #0D1F2D; margin: 0; }
-  .wrap { max-width: 640px; margin: 40px auto; padding: 0 20px; }
-  .back-link { display: inline-block; margin-bottom: 16px; font-size: 13px; color: #3D5166; text-decoration: none; }
-  .back-link:hover { text-decoration: underline; }
-  h1 { font-size: 22px; margin-bottom: 8px; }
-  p.sub { color: #3D5166; font-size: 14px; margin-bottom: 24px; }
-  .callout { background: #fff; border-left: 3px solid #1A9E9E; border-radius: 8px; padding: 16px 18px; margin-bottom: 20px; }
-  .callout h2 { font-size: 14px; margin: 0 0 6px; }
-  .callout p { font-size: 13px; color: #3D5166; margin: 0; line-height: 1.5; }
-  textarea { width: 100%; min-height: 220px; padding: 14px; border: 1px solid #ccc; border-radius: 8px;
-             box-sizing: border-box; font-family: inherit; font-size: 14px; }
-  button { margin-top: 12px; padding: 12px 20px; border: none; border-radius: 6px; color: #fff; font-weight: 600;
-           background: linear-gradient(90deg, #1A9E9E, #7C3AED); cursor: pointer; }
-  button:disabled { opacity: 0.6; cursor: not-allowed; }
-  .status { margin-top: 32px; background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
-  .bar-bg { background: #e5e5e5; border-radius: 6px; height: 10px; overflow: hidden; margin: 10px 0 16px; }
-  .bar-fill { background: linear-gradient(90deg, #1A9E9E, #7C3AED); height: 100%; transition: width 0.3s; }
-  .missing-item { font-size: 14px; padding: 6px 0; border-bottom: 1px solid #f0f0f0; }
-  .missing-item .section { color: #7C3AED; font-size: 12px; font-weight: 600; margin-right: 8px; }
-  .ready { color: #1A9E9E; font-weight: 600; }
-  .hidden { display: none; }
-</style>
+<meta http-equiv="refresh" content="0; url=/home.html" />
+<title>Redirecting...</title>
 </head>
 <body>
-  <div class="wrap">
-    <a class="back-link" href="/home.html">&larr; Back to dashboard</a>
-    <h1>Tell us about the business</h1>
-    <p class="sub">Paste in anything you've got: a website description, an about page, notes on the audience, how you want to sound. No structure required, we'll sort it out.</p>
-
-    <div class="callout">
-      <h2>Source URLs (3 required)</h2>
-      <p>
-        If your paste includes 3 real URLs pointing to the kind of content you want the system pulling from,
-        we'll pick them up automatically. Otherwise, head back to the dashboard afterward, each source has
-        its own card there, click it and drop the link in directly. Only real URLs are accepted, not
-        descriptions or publication names.
-      </p>
-    </div>
-
-    <textarea id="rawText" placeholder="Paste here..."></textarea>
-    <br />
-    <button id="submitBtn">Submit</button>
-
-    <div class="status hidden" id="status">
-      <div id="readyMsg" class="ready hidden">This business is fully set up and ready to graduate.</div>
-      <div id="pctLabel"></div>
-      <div class="bar-bg"><div class="bar-fill" id="barFill" style="width:0%"></div></div>
-      <div id="missingList"></div>
-    </div>
-  </div>
-
-  <script>
-    const submitBtn = document.getElementById("submitBtn");
-    const rawText = document.getElementById("rawText");
-    const statusEl = document.getElementById("status");
-    const pctLabel = document.getElementById("pctLabel");
-    const barFill = document.getElementById("barFill");
-    const missingList = document.getElementById("missingList");
-    const readyMsg = document.getElementById("readyMsg");
-
-    async function refreshCompleteness() {
-      const res = await fetch("/.netlify/functions/completeness");
-      if (res.status === 401) { window.location.href = "/"; return; }
-      const data = await res.json();
-
-      statusEl.classList.remove("hidden");
-      pctLabel.textContent = data.completenessPct + "% complete";
-      barFill.style.width = data.completenessPct + "%";
-
-      if (data.readyToGraduate) {
-        readyMsg.classList.remove("hidden");
-        missingList.innerHTML = "";
-      } else {
-        readyMsg.classList.add("hidden");
-        missingList.innerHTML = data.missing
-          .map((m) => `<div class="missing-item"><span class="section">${m.section}</span>${m.label}</div>`)
-          .join("");
-      }
-    }
-
-    submitBtn.addEventListener("click", async () => {
-      const text = rawText.value.trim();
-      if (text.length < 20) {
-        alert("Add a bit more detail before submitting.");
-        return;
-      }
-      submitBtn.disabled = true;
-      submitBtn.textContent = "Processing...";
-
-      const res = await fetch("/.netlify/functions/intake-submit", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ rawText: text }),
-      });
-
-      if (res.status === 401) { window.location.href = "/"; return; }
-
-      submitBtn.disabled = false;
-      submitBtn.textContent = "Submit";
-      rawText.value = "";
-
-      if (res.ok) {
-        await refreshCompleteness();
-      } else {
-        const err = await res.json();
-        alert(err.error || "Something went wrong.");
-      }
-    });
-
-    refreshCompleteness();
-  </script>
+  <!-- This page is retired. Editing now happens directly on the dashboard,
+       there's no separate paste-and-fill-gaps flow anymore. -->
+  <script>window.location.replace("/home.html");</script>
+  <p>Redirecting to your <a href="/home.html">dashboard</a>...</p>
 </body>
 </html>
