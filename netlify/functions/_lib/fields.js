@@ -63,6 +63,46 @@ const CONTENT_NATURE_OPTIONS = [
   "News Reaction",
 ];
 
+// Same rationale as content nature above — generic starter list, swappable.
+const FORMAT_OPTIONS = [
+  "LinkedIn Post",
+  "Blog Article",
+  "Newsletter",
+  "Video Script",
+  "Instagram Post",
+  "Twitter/X Post",
+  "Case Study",
+  "Whitepaper",
+  "Podcast Script",
+  "Email Sequence",
+];
+
+// Common IANA zones, US-first (most clients onboarded so far are US-based)
+// with a few international ones. Kept short and mirrored on the frontend
+// exactly like FONT_OPTIONS and CONTENT_NATURE_OPTIONS.
+const TIMEZONE_OPTIONS = [
+  "America/New_York",
+  "America/Chicago",
+  "America/Denver",
+  "America/Los_Angeles",
+  "America/Anchorage",
+  "Pacific/Honolulu",
+  "America/Toronto",
+  "Europe/London",
+  "Europe/Berlin",
+  "UTC",
+];
+
+const CADENCE_OPTIONS = [
+  "1x per week",
+  "2x per week",
+  "3x per week",
+  "4x per week",
+  "5x per week (weekdays)",
+  "Daily",
+  "2x per day",
+];
+
 // Accepts with or without a scheme (adds https:// before validating if
 // missing) so "sistergolfonline.com" and "https://sistergolfonline.com"
 // both pass, but plain text with no domain shape gets rejected outright.
@@ -107,4 +147,7 @@ module.exports = {
   isValidUrl,
   SOURCE_URL_KEYS,
   CONTENT_NATURE_OPTIONS,
+  FORMAT_OPTIONS,
+  TIMEZONE_OPTIONS,
+  CADENCE_OPTIONS,
 };
