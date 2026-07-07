@@ -95,7 +95,10 @@
   .field-card-value { font-size: 14px; line-height: 1.45; color: var(--primary); }
   .field-card-value.empty { color: #b0b6ba; font-style: italic; }
   .field-card-value.upload-hint { color: var(--accent-b); font-weight: 600; font-style: normal; }
+  .field-card-value a { color: var(--accent-b); word-break: break-all; }
   .logo-thumb { max-height: 56px; max-width: 100%; border-radius: 8px; display: block; }
+  .chip-list { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { background: rgba(124,58,237,0.1); color: var(--accent-b); font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 999px; }
   .field-edit-input {
     width: 100%; font-family: inherit; font-size: 13px; padding: 8px; border: 1px solid #dde3e3; border-radius: 6px;
     resize: vertical; margin-bottom: 8px;
@@ -103,6 +106,16 @@
   .field-edit-select {
     width: 100%; font-family: inherit; font-size: 13px; padding: 8px; border: 1px solid #dde3e3; border-radius: 6px; margin-bottom: 8px;
   }
+  .font-preview {
+    font-size: 16px; padding: 12px; border: 1px solid #dde3e3; border-radius: 6px; margin-bottom: 8px;
+    background: #fafafa; color: var(--primary);
+  }
+  .checkbox-list { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+  .checkbox-item {
+    font-size: 12px; display: flex; align-items: center; gap: 4px; background: #f5f5f5; padding: 4px 8px;
+    border-radius: 6px; cursor: pointer;
+  }
+  .field-edit-error { color: #c0392b; font-size: 12px; margin-bottom: 8px; }
   .field-edit-actions { display: flex; gap: 8px; }
   .field-edit-actions button { font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 6px; border: none; cursor: pointer; }
   .field-save-btn { background: var(--accent-b); color: #fff; }
@@ -211,6 +224,16 @@
       "Playfair Display", "Merriweather", "Georgia", "Times New Roman", "Arial", "Helvetica",
     ];
 
+    // Mirrors CONTENT_NATURE_OPTIONS in netlify/functions/_lib/fields.js —
+    // kept in sync by hand since this is a static file with no server
+    // templating, same pattern already used for FONT_OPTIONS above.
+    const CONTENT_NATURE_OPTIONS = [
+      "Stat / Data Point", "Field Note", "Framework", "Contrarian", "Case Study",
+      "Trend Take", "Explainer", "Behind the Build", "Story", "Announcement", "News Reaction",
+    ];
+
+    const SOURCE_URL_KEYS = new Set(["source_url_1", "source_url_2", "source_url_3"]);
+
     function escapeHtml(str) {
       return String(str)
         .replace(/&/g, "&amp;")
@@ -250,13 +273,36 @@
     }
 
     // The one field-card renderer, reused across List, Gallery, and the
-    // Kanban detail modal. logo_url gets its own rendering — a thumbnail if
-    // set, an upload hint if not — since it's an upload, not typed text.
+    // Kanban detail modal. A few keys get special rendering: logo_url is a
+    // thumbnail (it's an upload, not text), source URLs are real clickable
+    // links, content_natures shows as chips instead of a raw comma string.
     function fieldCardHtml(f) {
       if (f.key === "logo_url") {
         const inner = f.filled
           ? `<img src="${escapeHtml(f.value)}" alt="Logo" class="logo-thumb" />`
           : `<div class="field-card-value upload-hint">Click to upload a logo</div>`;
+        return `
+          <div class="field-card ${f.filled ? '' : 'field-card--empty'}" data-key="${f.key}">
+            <div class="field-card-label">${escapeHtml(f.label)}${f.required ? '<span class="req-dot" title="Required"></span>' : ''}</div>
+            ${inner}
+          </div>
+        `;
+      }
+      if (SOURCE_URL_KEYS.has(f.key)) {
+        const inner = f.filled
+          ? `<div class="field-card-value"><a href="${escapeHtml(f.value)}" target="_blank" rel="noopener">${escapeHtml(f.value)}</a></div>`
+          : `<div class="field-card-value empty">Not yet provided</div>`;
+        return `
+          <div class="field-card ${f.filled ? '' : 'field-card--empty'}" data-key="${f.key}">
+            <div class="field-card-label">${escapeHtml(f.label)}${f.required ? '<span class="req-dot" title="Required"></span>' : ''}</div>
+            ${inner}
+          </div>
+        `;
+      }
+      if (f.key === "content_natures") {
+        const inner = f.filled
+          ? `<div class="chip-list">${f.value.split(",").map((v) => v.trim()).filter(Boolean).map((v) => `<span class="chip">${escapeHtml(v)}</span>`).join("")}</div>`
+          : `<div class="field-card-value empty">Not yet provided</div>`;
         return `
           <div class="field-card ${f.filled ? '' : 'field-card--empty'}" data-key="${f.key}">
             <div class="field-card-label">${escapeHtml(f.label)}${f.required ? '<span class="req-dot" title="Required"></span>' : ''}</div>
@@ -448,9 +494,10 @@
           <div class="field-card-label">${escapeHtml(field.label)}${field.required ? '<span class="req-dot"></span>' : ''}</div>
           <select class="field-edit-select">
             <option value="">Choose a font...</option>
-            ${FONT_OPTIONS.map((opt) => `<option value="${opt}" ${opt === current ? "selected" : ""}>${opt}</option>`).join("")}
+            ${FONT_OPTIONS.map((opt) => `<option value="${opt}" style="font-family:'${opt}'" ${opt === current ? "selected" : ""}>${opt}</option>`).join("")}
             <option value="__custom__" ${isCustom ? "selected" : ""}>Custom...</option>
           </select>
+          <div class="font-preview" style="font-family:'${isCustom ? current : (current || FONT_OPTIONS[0])}', system-ui, sans-serif">Aa Bb Cc — the quick brown fox jumps</div>
           <input type="text" class="field-edit-input field-custom-font ${isCustom ? '' : 'hidden'}" placeholder="Type a font name" value="${isCustom ? escapeHtml(current) : ''}" />
           <div class="field-edit-actions">
             <button class="field-save-btn" type="button">Save</button>
@@ -459,9 +506,19 @@
         `;
         const select = card.querySelector(".field-edit-select");
         const customInput = card.querySelector(".field-custom-font");
+        const previewBox = card.querySelector(".font-preview");
         select.addEventListener("change", () => {
-          customInput.classList.toggle("hidden", select.value !== "__custom__");
-          if (select.value === "__custom__") customInput.focus();
+          const isNowCustom = select.value === "__custom__";
+          customInput.classList.toggle("hidden", !isNowCustom);
+          if (isNowCustom) {
+            customInput.focus();
+            previewBox.style.fontFamily = `'${customInput.value || "Inter"}', system-ui, sans-serif`;
+          } else {
+            previewBox.style.fontFamily = `'${select.value || FONT_OPTIONS[0]}', system-ui, sans-serif`;
+          }
+        });
+        customInput.addEventListener("input", () => {
+          previewBox.style.fontFamily = `'${customInput.value || "Inter"}', system-ui, sans-serif`;
         });
         card.querySelector(".field-save-btn").addEventListener("click", async (ev) => {
           ev.stopPropagation();
@@ -475,9 +532,62 @@
         return;
       }
 
+      if (key === "content_natures") {
+        const selected = new Set((field.value || "").split(",").map((v) => v.trim()).filter(Boolean));
+        card.innerHTML = `
+          <div class="field-card-label">${escapeHtml(field.label)}${field.required ? '<span class="req-dot"></span>' : ''}</div>
+          <div class="checkbox-list">
+            ${CONTENT_NATURE_OPTIONS.map((opt) => `
+              <label class="checkbox-item">
+                <input type="checkbox" value="${escapeHtml(opt)}" ${selected.has(opt) ? "checked" : ""} /> ${escapeHtml(opt)}
+              </label>
+            `).join("")}
+          </div>
+          <div class="field-edit-error hidden"></div>
+          <div class="field-edit-actions">
+            <button class="field-save-btn" type="button">Save</button>
+            <button class="field-cancel-btn" type="button">Cancel</button>
+          </div>
+        `;
+        card.querySelector(".field-save-btn").addEventListener("click", async (ev) => {
+          ev.stopPropagation();
+          const checked = [...card.querySelectorAll('input[type="checkbox"]:checked')].map((cb) => cb.value);
+          await saveField(key, checked.join(", "), card);
+        });
+        card.querySelector(".field-cancel-btn").addEventListener("click", (ev) => {
+          ev.stopPropagation();
+          renderCurrentView();
+        });
+        return;
+      }
+
+      if (SOURCE_URL_KEYS.has(key)) {
+        card.innerHTML = `
+          <div class="field-card-label">${escapeHtml(field.label)}${field.required ? '<span class="req-dot"></span>' : ''}</div>
+          <input type="url" class="field-edit-input" placeholder="https://example.com" value="${escapeHtml(field.value || "")}" />
+          <div class="field-edit-error hidden"></div>
+          <div class="field-edit-actions">
+            <button class="field-save-btn" type="button">Save</button>
+            <button class="field-cancel-btn" type="button">Cancel</button>
+          </div>
+        `;
+        card.querySelector(".field-edit-input").focus();
+        card.querySelector(".field-save-btn").addEventListener("click", async (ev) => {
+          ev.stopPropagation();
+          const newVal = card.querySelector(".field-edit-input").value.trim();
+          await saveField(key, newVal, card);
+        });
+        card.querySelector(".field-cancel-btn").addEventListener("click", (ev) => {
+          ev.stopPropagation();
+          renderCurrentView();
+        });
+        return;
+      }
+
       card.innerHTML = `
         <div class="field-card-label">${escapeHtml(field.label)}${field.required ? '<span class="req-dot"></span>' : ''}</div>
         <textarea class="field-edit-input" rows="3">${escapeHtml(field.value || "")}</textarea>
+        <div class="field-edit-error hidden"></div>
         <div class="field-edit-actions">
           <button class="field-save-btn" type="button">Save</button>
           <button class="field-cancel-btn" type="button">Cancel</button>
@@ -497,14 +607,29 @@
 
     async function saveField(key, value, card) {
       const saveBtn = card.querySelector(".field-save-btn");
+      const errorEl = card.querySelector(".field-edit-error");
       saveBtn.disabled = true;
       saveBtn.textContent = "Saving...";
+      if (errorEl) errorEl.classList.add("hidden");
+
       const res = await fetch("/.netlify/functions/update-field", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ key, value }),
       });
       if (res.status === 401) { window.location.href = "/"; return; }
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        saveBtn.disabled = false;
+        saveBtn.textContent = "Save";
+        if (errorEl) {
+          errorEl.textContent = data.error || "Couldn't save that value.";
+          errorEl.classList.remove("hidden");
+        }
+        return;
+      }
+
       // Close any open detail modal — the Kanban board behind it refreshes
       // via load(), reopening isn't necessary for the edit to be reflected.
       const modal = document.querySelector(".modal-backdrop");
