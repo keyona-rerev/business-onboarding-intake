@@ -16,9 +16,10 @@ create table if not exists intake_data (
   business_description text,
   industry text,
   website_url text,
-  primary_color text,
-  secondary_color text,
-  accent_color text,
+  color_background text,
+  color_accent text,
+  color_highlight text,
+  color_sparing_accent text,
   logo_url text,
   font_names text,
 
