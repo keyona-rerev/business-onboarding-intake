@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Business Setup</title>
+<style>
+  body { font-family: 'Inter', system-ui, sans-serif; background: #F0F7F7; color: #0D1F2D;
+         display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+  form { background: #fff; padding: 40px; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); width: 320px; }
+  h1 { font-size: 20px; margin-bottom: 24px; }
+  label { display: block; font-size: 13px; margin-bottom: 6px; color: #3D5166; }
+  input { width: 100%; padding: 10px; margin-bottom: 16px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+  button { width: 100%; padding: 12px; border: none; border-radius: 6px; color: #fff; font-weight: 600;
+           background: linear-gradient(90deg, #1A9E9E, #7C3AED); cursor: pointer; }
+  .error { color: #c0392b; font-size: 13px; margin-top: 12px; display: none; }
+</style>
+</head>
+<body>
+  <form id="loginForm">
+    <h1>Business Setup Login</h1>
+    <label for="username">Username</label>
+    <input type="text" id="username" required autocomplete="username" />
+    <label for="password">Password</label>
+    <input type="password" id="password" required autocomplete="current-password" />
+    <button type="submit">Log in</button>
+    <div class="error" id="error">Invalid login. Check your username and password.</div>
+  </form>
+
+  <script>
+    document.getElementById("loginForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
+      const errorEl = document.getElementById("error");
+      errorEl.style.display = "none";
+
+      const res = await fetch("/.netlify/functions/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+
+      if (res.ok) {
+        window.location.href = "/intake.html";
+      } else {
+        errorEl.style.display = "block";
+      }
+    });
+  </script>
+</body>
+</html>
