@@ -11,18 +11,21 @@ async function ensureSchema(client) {
       ADD COLUMN IF NOT EXISTS color_background text,
       ADD COLUMN IF NOT EXISTS color_accent text,
       ADD COLUMN IF NOT EXISTS color_highlight text,
-      ADD COLUMN IF NOT EXISTS color_sparing_accent text;
+      ADD COLUMN IF NOT EXISTS color_sparing_accent text,
+      ADD COLUMN IF NOT EXISTS source_url_1 text,
+      ADD COLUMN IF NOT EXISTS source_url_2 text,
+      ADD COLUMN IF NOT EXISTS source_url_3 text;
   `);
 
-  // The old 3-color model (primary/secondary/accent) is retired in favor of
-  // the 4 named roles above. Drop rather than leave orphaned — nothing
-  // reads these anymore, and keeping unused columns around just invites
-  // drift between what's in the database and what the app actually uses.
+  // Retired columns get dropped rather than left orphaned — nothing reads
+  // these anymore, and keeping unused columns around just invites drift
+  // between what's in the database and what the app actually uses.
   await client.query(`
     ALTER TABLE intake_data
       DROP COLUMN IF EXISTS primary_color,
       DROP COLUMN IF EXISTS secondary_color,
-      DROP COLUMN IF EXISTS accent_color;
+      DROP COLUMN IF EXISTS accent_color,
+      DROP COLUMN IF EXISTS source_feeds;
   `);
 }
 
