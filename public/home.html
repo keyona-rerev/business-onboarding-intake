@@ -93,9 +93,14 @@
   .req-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent-b); display: inline-block; }
   .field-card-value { font-size: 14px; line-height: 1.45; color: var(--primary); }
   .field-card-value.empty { color: #b0b6ba; font-style: italic; }
+  .field-card-value.upload-hint { color: var(--accent-b); font-weight: 600; font-style: normal; }
+  .logo-thumb { max-height: 56px; max-width: 100%; border-radius: 8px; display: block; }
   .field-edit-input {
     width: 100%; font-family: inherit; font-size: 13px; padding: 8px; border: 1px solid #dde3e3; border-radius: 6px;
     resize: vertical; margin-bottom: 8px;
+  }
+  .field-edit-select {
+    width: 100%; font-family: inherit; font-size: 13px; padding: 8px; border: 1px solid #dde3e3; border-radius: 6px; margin-bottom: 8px;
   }
   .field-edit-actions { display: flex; gap: 8px; }
   .field-edit-actions button { font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 6px; border: none; cursor: pointer; }
@@ -198,6 +203,12 @@
     let galleryIndex = 0;
     let currentView = "list";
 
+    const FONT_OPTIONS = [
+      "Inter", "Roboto", "Open Sans", "Lato", "Montserrat", "Poppins", "Nunito",
+      "Raleway", "Work Sans", "DM Sans", "Space Grotesk", "Source Sans Pro",
+      "Playfair Display", "Merriweather", "Georgia", "Times New Roman", "Arial", "Helvetica",
+    ];
+
     function escapeHtml(str) {
       return String(str)
         .replace(/&/g, "&amp;")
@@ -237,9 +248,20 @@
     }
 
     // The one field-card renderer, reused across List, Gallery, and the
-    // Kanban detail modal. Every card is click-to-edit, right where you see
-    // it, no separate paste-and-extract detour required for a single fix.
+    // Kanban detail modal. logo_url gets its own rendering — a thumbnail if
+    // set, an upload hint if not — since it's an upload, not typed text.
     function fieldCardHtml(f) {
+      if (f.key === "logo_url") {
+        const inner = f.filled
+          ? `<img src="${escapeHtml(f.value)}" alt="Logo" class="logo-thumb" />`
+          : `<div class="field-card-value upload-hint">Click to upload a logo</div>`;
+        return `
+          <div class="field-card ${f.filled ? '' : 'field-card--empty'}" data-key="${f.key}">
+            <div class="field-card-label">${escapeHtml(f.label)}${f.required ? '<span class="req-dot" title="Required"></span>' : ''}</div>
+            ${inner}
+          </div>
+        `;
+      }
       const valueHtml = f.filled ? escapeHtml(f.value) : "Not yet provided";
       return `
         <div class="field-card ${f.filled ? '' : 'field-card--empty'}" data-key="${f.key}">
@@ -405,7 +427,50 @@
       const key = card.dataset.key;
       const field = findFieldByKey(key);
       if (!field) return;
+
+      if (key === "logo_url") {
+        // Logos are uploaded, never typed — hand off straight to the real
+        // upload control instead of opening a text editor for a URL.
+        document.getElementById("logoInput").click();
+        return;
+      }
+
       card.classList.add("editing");
+
+      if (key === "font_names") {
+        const current = field.value || "";
+        const isCustom = !!current && !FONT_OPTIONS.includes(current);
+        card.innerHTML = `
+          <div class="field-card-label">${escapeHtml(field.label)}${field.required ? '<span class="req-dot"></span>' : ''}</div>
+          <select class="field-edit-select">
+            <option value="">Choose a font...</option>
+            ${FONT_OPTIONS.map((opt) => `<option value="${opt}" ${opt === current ? "selected" : ""}>${opt}</option>`).join("")}
+            <option value="__custom__" ${isCustom ? "selected" : ""}>Custom...</option>
+          </select>
+          <input type="text" class="field-edit-input field-custom-font ${isCustom ? '' : 'hidden'}" placeholder="Type a font name" value="${isCustom ? escapeHtml(current) : ''}" />
+          <div class="field-edit-actions">
+            <button class="field-save-btn" type="button">Save</button>
+            <button class="field-cancel-btn" type="button">Cancel</button>
+          </div>
+        `;
+        const select = card.querySelector(".field-edit-select");
+        const customInput = card.querySelector(".field-custom-font");
+        select.addEventListener("change", () => {
+          customInput.classList.toggle("hidden", select.value !== "__custom__");
+          if (select.value === "__custom__") customInput.focus();
+        });
+        card.querySelector(".field-save-btn").addEventListener("click", async (ev) => {
+          ev.stopPropagation();
+          const val = select.value === "__custom__" ? customInput.value.trim() : select.value;
+          await saveField(key, val, card);
+        });
+        card.querySelector(".field-cancel-btn").addEventListener("click", (ev) => {
+          ev.stopPropagation();
+          renderCurrentView();
+        });
+        return;
+      }
+
       card.innerHTML = `
         <div class="field-card-label">${escapeHtml(field.label)}${field.required ? '<span class="req-dot"></span>' : ''}</div>
         <textarea class="field-edit-input" rows="3">${escapeHtml(field.value || "")}</textarea>
