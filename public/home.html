@@ -103,6 +103,19 @@
 
   .section-icon { width: 16px; height: 16px; vertical-align: -3px; margin-right: 6px; color: var(--accent-b); }
 
+  /* Plain-language "what is this section actually asking for" box —
+     default expanded, collapsible per section. */
+  .section-explainer {
+    background: rgba(124,58,237,0.06); border: 1px solid rgba(124,58,237,0.18); border-radius: 10px;
+    padding: 12px 14px; margin-bottom: 16px; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+  }
+  .section-explainer-text { font-size: 13px; color: var(--body-text); line-height: 1.5; margin: 0; flex: 1; }
+  .section-explainer-text.hidden { display: none; }
+  .section-explainer-toggle {
+    background: none; border: none; color: var(--accent-b); font-size: 12px; font-weight: 600; cursor: pointer;
+    white-space: nowrap; text-decoration: underline; flex-shrink: 0;
+  }
+
   /* Section card shell (List + Gallery) */
   .section-card { background: #fff; border-radius: 16px; padding: 24px; margin-bottom: 18px; box-shadow: 0 2px 16px rgba(0,0,0,0.05); }
   .section-card-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 16px; }
@@ -324,6 +337,38 @@
     const SELECT_FIELD_OPTIONS = { posting_timezone: TIMEZONE_OPTIONS, posting_cadence: CADENCE_OPTIONS };
     const LONG_TEXT_KEYS = new Set(["business_description", "audience_pain_points", "fit_criteria"]);
 
+    // Plain-language explanation of what each section is actually asking
+    // for. Written for a business owner filling this out with no context
+    // on the terminology, not for someone who already knows the system.
+    const SECTION_EXPLAINERS = {
+      "Business Identity": "The basics of who you are: your name, a short description of what you do, your industry, and your brand look (colors, logo, fonts). This is what makes content sound and look like you, not like a generic business.",
+      "Audience": "Who you're actually writing for and what matters to them. The more specific this is, the better the system can tell what's genuinely worth posting versus what would fall flat with your real readers.",
+      "Voice & Hard Rules": "How you want to sound, and anything you never want said. Set the tone here (a few words that describe it), plus any words, phrases, or claims that should never show up in your content.",
+      "Content Structure": "What kinds of things you'll actually publish (posts, articles, videos, etc.) and the recurring themes or categories your content tends to fall into.",
+      "Sources": "This is where you point us to 3 real examples of good source material, not your own content, but other blogs, articles, or publications that show the kind of thing you'd want the system reading and pulling ideas or information from. For a business like SisterGolf, that could be another well-written golf blog, a publication that covers your industry well, or an article about the kind of events or topics you build content around.",
+      "Posting Defaults": "The practical logistics: what timezone you're in, what time of day you want things posted, and how often.",
+    };
+
+    function sectionExplainerHtml(name) {
+      const text = SECTION_EXPLAINERS[name];
+      if (!text) return "";
+      return `
+        <div class="section-explainer">
+          <p class="section-explainer-text">${escapeHtml(text)}</p>
+          <button type="button" class="section-explainer-toggle">Hide explanation</button>
+        </div>
+      `;
+    }
+
+    document.addEventListener("click", (e) => {
+      const btn = e.target.closest(".section-explainer-toggle");
+      if (!btn) return;
+      const wrap = btn.closest(".section-explainer");
+      const textEl = wrap.querySelector(".section-explainer-text");
+      const nowHidden = textEl.classList.toggle("hidden");
+      btn.textContent = nowHidden ? "Show explanation" : "Hide explanation";
+    });
+
     function escapeHtml(str) {
       return String(str)
         .replace(/&/g, "&amp;")
@@ -470,6 +515,7 @@
             <h3>${sectionIcon(s.name)}${escapeHtml(s.name)}</h3>
             <span class="${pctPillClass(s.sectionPct)}">${s.sectionPct}% complete</span>
           </div>
+          ${sectionExplainerHtml(s.name)}
           ${sectionFieldGridHtml(s)}
         </div>
       `).join("");
@@ -489,6 +535,7 @@
             </div>
             <button id="nextBtn" ${galleryIndex === sections.length - 1 ? "disabled" : ""}>&rarr;</button>
           </div>
+          ${sectionExplainerHtml(s.name)}
           ${sectionFieldGridHtml(s)}
           <div class="gallery-dots">
             ${sections.map((_, i) => `<span class="${i === galleryIndex ? 'active' : ''}" data-i="${i}"></span>`).join("")}
@@ -513,6 +560,7 @@
             <h3>${sectionIcon(s.name)}${escapeHtml(s.name)} <span class="${pctPillClass(s.sectionPct)}" style="margin-left:8px">${s.sectionPct}%</span></h3>
             <button class="modal-close">&times;</button>
           </div>
+          ${sectionExplainerHtml(s.name)}
           ${sectionFieldGridHtml(s)}
         </div>
       `;
@@ -571,9 +619,6 @@
       btn.addEventListener("click", () => switchView(btn.dataset.view));
     });
 
-    // "Fill in what's missing" no longer goes to a separate page — it
-    // switches to List (the view with actual field cards to scroll
-    // through) and scrolls straight to the first unfilled one.
     document.getElementById("scrollToMissingBtn").addEventListener("click", () => {
       if (currentView !== "list") switchView("list");
       requestAnimationFrame(() => {
