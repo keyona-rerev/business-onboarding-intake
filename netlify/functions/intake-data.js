@@ -61,9 +61,10 @@ exports.handler = async (event) => {
       completenessPct: record.completeness_pct || 0,
       websiteUrl: record.website_url || null,
       brand: {
-        primaryColor: record.primary_color || null,
-        secondaryColor: record.secondary_color || null,
-        accentColor: record.accent_color || null,
+        backgroundColor: record.color_background || null,
+        accentColor: record.color_accent || null,
+        highlightColor: record.color_highlight || null,
+        sparingAccentColor: record.color_sparing_accent || null,
         logoUrl: record.logo_url || null,
         fontNames: record.font_names || null,
       },
