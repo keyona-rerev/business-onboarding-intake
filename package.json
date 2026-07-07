@@ -1,0 +1,12 @@
+{
+  "name": "business-onboarding-intake",
+  "version": "1.0.0",
+  "description": "Collects and verifies a new business's setup info before it graduates into a real Knowledge Loom Prismm instance.",
+  "private": true,
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.0",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.12.0"
+  }
+}
