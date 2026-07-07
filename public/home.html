@@ -12,6 +12,7 @@
     --accent-a: #1A9E9E;
     --accent-b: #7C3AED;
     --sparing-accent: #7C3AED;
+    --warn: #E0A458;
     --font: 'Inter', system-ui, sans-serif;
   }
   * { box-sizing: border-box; }
@@ -61,12 +62,23 @@
   #logoStatus { font-size: 12px; color: var(--body-text); }
   .logo-preview { height: 32px; width: 32px; border-radius: 6px; object-fit: cover; }
 
-  .view-toggle { display: flex; gap: 8px; margin-bottom: 20px; }
+  .toolbar-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
+  .view-toggle { display: flex; gap: 8px; }
   .view-toggle button {
     padding: 9px 18px; border-radius: 999px; border: 1px solid #dde3e3; background: #fff;
     color: var(--body-text); font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s;
   }
   .view-toggle button.active { background: linear-gradient(90deg, var(--accent-a), var(--accent-b)); color: #fff; border-color: transparent; }
+  .legend { font-size: 12px; color: var(--body-text); display: flex; align-items: center; gap: 6px; }
+
+  .unsaved-bar {
+    background: #fff3e0; border: 1px solid var(--warn); color: #8a5a1e; font-size: 13px; padding: 10px 14px;
+    border-radius: 8px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  }
+  .unsaved-bar button {
+    background: var(--warn); color: #fff; border: none; border-radius: 6px; padding: 6px 12px;
+    font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap;
+  }
 
   .section-icon { width: 16px; height: 16px; vertical-align: -3px; margin-right: 6px; color: var(--accent-b); }
 
@@ -88,17 +100,26 @@
     transition: box-shadow 0.15s, border-color 0.15s; cursor: pointer;
   }
   .field-card:hover { border-color: rgba(124,58,237,0.35); box-shadow: 0 2px 10px rgba(0,0,0,0.06); }
-  .field-card.field-card--empty { background: repeating-linear-gradient(135deg, #fafafa, #fafafa 8px, #f4f4f4 8px, #f4f4f4 16px); border-style: dashed; }
-  .field-card.editing { cursor: default; background: #fff; border-color: var(--accent-b); }
+  .field-card.field-card--empty {
+    background: repeating-linear-gradient(135deg, #fffaf2, #fffaf2 8px, #fdf3e2 8px, #fdf3e2 16px);
+    border: 1.5px solid var(--warn);
+    box-shadow: 0 0 0 3px rgba(224,164,88,0.14);
+  }
+  .field-card.editing { cursor: default; background: #fff; border-color: var(--accent-b); box-shadow: none; }
   .field-card-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--body-text); margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
   .req-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--sparing-accent); display: inline-block; }
   .field-card-value { font-size: 14px; line-height: 1.45; color: var(--primary); }
-  .field-card-value.empty { color: #b0b6ba; font-style: italic; }
+  .field-card-value.empty { color: #b0862e; font-style: italic; }
   .field-card-value.upload-hint { color: var(--accent-b); font-weight: 600; font-style: normal; }
   .field-card-value a { color: var(--accent-b); word-break: break-all; }
   .logo-thumb { max-height: 56px; max-width: 100%; border-radius: 8px; display: block; }
   .chip-list { display: flex; flex-wrap: wrap; gap: 6px; }
   .chip { background: rgba(124,58,237,0.1); color: var(--accent-b); font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 999px; }
+  .color-swatch-row { display: flex; align-items: center; gap: 8px; }
+  .color-swatch { width: 22px; height: 22px; border-radius: 6px; border: 1px solid rgba(0,0,0,0.12); display: inline-block; flex-shrink: 0; }
+  .color-edit-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .color-edit-row input[type="color"] { width: 40px; height: 34px; border: 1px solid #dde3e3; border-radius: 6px; padding: 2px; cursor: pointer; flex-shrink: 0; }
+  .color-edit-row input[type="text"] { margin-bottom: 0; }
   .field-edit-input {
     width: 100%; font-family: inherit; font-size: 13px; padding: 8px; border: 1px solid #dde3e3; border-radius: 6px;
     resize: vertical; margin-bottom: 8px;
@@ -144,7 +165,7 @@
   .kanban-card .kanban-meta { font-size: 12px; color: var(--accent-a); font-weight: 600; }
   .kanban-card .kanban-hint { font-size: 11px; color: #b0b6ba; margin-top: 8px; }
 
-  /* Detail modal (Kanban click-through) */
+  /* Detail / long-text edit modal */
   .modal-backdrop {
     position: fixed; inset: 0; background: rgba(13,31,45,0.45); display: flex; align-items: center; justify-content: center;
     padding: 20px; z-index: 50;
@@ -153,6 +174,7 @@
   .modal-box-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
   .modal-box-head h3 { margin: 0; font-size: 18px; display: flex; align-items: center; }
   .modal-close { background: #f0f0f0; border: none; border-radius: 50%; width: 32px; height: 32px; font-size: 15px; cursor: pointer; color: var(--body-text); }
+  .modal-box textarea.field-edit-input { min-height: 200px; }
 
   .hidden { display: none; }
 </style>
@@ -202,10 +224,18 @@
       </div>
     </div>
 
-    <div class="view-toggle">
-      <button data-view="list" class="active">List</button>
-      <button data-view="gallery">Gallery</button>
-      <button data-view="kanban">Kanban</button>
+    <div class="toolbar-row">
+      <div class="view-toggle">
+        <button data-view="list" class="active">List</button>
+        <button data-view="gallery">Gallery</button>
+        <button data-view="kanban">Kanban</button>
+      </div>
+      <div class="legend"><span class="req-dot"></span> Required field</div>
+    </div>
+
+    <div class="unsaved-bar hidden" id="unsavedBar">
+      <span>You've got another card mid-edit elsewhere on this page.</span>
+      <button id="discardAllBtn" type="button">Discard all unsaved edits</button>
     </div>
 
     <div id="listView"></div>
@@ -224,15 +254,33 @@
       "Playfair Display", "Merriweather", "Georgia", "Times New Roman", "Arial", "Helvetica",
     ];
 
-    // Mirrors CONTENT_NATURE_OPTIONS in netlify/functions/_lib/fields.js —
-    // kept in sync by hand since this is a static file with no server
-    // templating, same pattern already used for FONT_OPTIONS above.
+    // These four mirror the canonical lists in netlify/functions/_lib/fields.js —
+    // kept in sync by hand since this is a static file with no server templating.
     const CONTENT_NATURE_OPTIONS = [
       "Stat / Data Point", "Field Note", "Framework", "Contrarian", "Case Study",
       "Trend Take", "Explainer", "Behind the Build", "Story", "Announcement", "News Reaction",
     ];
+    const FORMAT_OPTIONS = [
+      "LinkedIn Post", "Blog Article", "Newsletter", "Video Script", "Instagram Post",
+      "Twitter/X Post", "Case Study", "Whitepaper", "Podcast Script", "Email Sequence",
+    ];
+    const TIMEZONE_OPTIONS = [
+      "America/New_York", "America/Chicago", "America/Denver", "America/Los_Angeles",
+      "America/Anchorage", "Pacific/Honolulu", "America/Toronto", "Europe/London",
+      "Europe/Berlin", "UTC",
+    ];
+    const CADENCE_OPTIONS = [
+      "1x per week", "2x per week", "3x per week", "4x per week",
+      "5x per week (weekdays)", "Daily", "2x per day",
+    ];
 
     const SOURCE_URL_KEYS = new Set(["source_url_1", "source_url_2", "source_url_3"]);
+    const COLOR_KEYS = new Set(["color_background", "color_accent", "color_highlight", "color_sparing_accent"]);
+    const CHECKBOX_FIELD_OPTIONS = { content_natures: CONTENT_NATURE_OPTIONS, formats: FORMAT_OPTIONS };
+    const SELECT_FIELD_OPTIONS = { posting_timezone: TIMEZONE_OPTIONS, posting_cadence: CADENCE_OPTIONS };
+    // Paragraph-length fields get a proper modal to edit in, not a cramped
+    // 3-row textarea squeezed into a 220px card.
+    const LONG_TEXT_KEYS = new Set(["business_description", "audience_pain_points", "fit_criteria"]);
 
     function escapeHtml(str) {
       return String(str)
@@ -243,15 +291,16 @@
         .replace(/'/g, "&#39;");
     }
 
+    function isValidHex(v) {
+      return /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(v || "");
+    }
+
     function pctPillClass(pct) {
       if (pct === 100) return "pct-pill pct-complete";
       if (pct === 0) return "pct-pill pct-empty";
       return "pct-pill";
     }
 
-    // One icon per section, mostly so "Audience" reads as people, not a
-    // wall of text. Reused in List headers, Gallery headers, and Kanban
-    // cards so the same section always looks the same everywhere.
     const SECTION_ICONS = {
       "Business Identity": '<svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="1"></rect><path d="M9 21v-4h6v4M9 8h1M14 8h1M9 12h1M14 12h1"></path></svg>',
       "Audience": '<svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 4-6 8-6s8 2 8 6"></path></svg>',
@@ -260,9 +309,7 @@
       "Sources": '<svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"></path><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"></path></svg>',
       "Posting Defaults": '<svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M16 2v4M8 2v4M3 10h18"></path></svg>',
     };
-    function sectionIcon(name) {
-      return SECTION_ICONS[name] || "";
-    }
+    function sectionIcon(name) { return SECTION_ICONS[name] || ""; }
 
     function findFieldByKey(key) {
       for (const s of sections) {
@@ -274,47 +321,42 @@
 
     // The one field-card renderer, reused across List, Gallery, and the
     // Kanban detail modal. A few keys get special rendering: logo_url is a
-    // thumbnail (it's an upload, not text), source URLs are real clickable
-    // links, content_natures shows as chips instead of a raw comma string.
+    // thumbnail, source URLs are clickable links, content_natures/formats
+    // show as chips, colors show as an actual swatch instead of raw hex text.
     function fieldCardHtml(f) {
       if (f.key === "logo_url") {
         const inner = f.filled
           ? `<img src="${escapeHtml(f.value)}" alt="Logo" class="logo-thumb" />`
           : `<div class="field-card-value upload-hint">Click to upload a logo</div>`;
-        return `
-          <div class="field-card ${f.filled ? '' : 'field-card--empty'}" data-key="${f.key}">
-            <div class="field-card-label">${escapeHtml(f.label)}${f.required ? '<span class="req-dot" title="Required"></span>' : ''}</div>
-            ${inner}
-          </div>
-        `;
+        return wrapCard(f, inner);
       }
       if (SOURCE_URL_KEYS.has(f.key)) {
         const inner = f.filled
           ? `<div class="field-card-value"><a href="${escapeHtml(f.value)}" target="_blank" rel="noopener">${escapeHtml(f.value)}</a></div>`
           : `<div class="field-card-value empty">Not yet provided</div>`;
-        return `
-          <div class="field-card ${f.filled ? '' : 'field-card--empty'}" data-key="${f.key}">
-            <div class="field-card-label">${escapeHtml(f.label)}${f.required ? '<span class="req-dot" title="Required"></span>' : ''}</div>
-            ${inner}
-          </div>
-        `;
+        return wrapCard(f, inner);
       }
-      if (f.key === "content_natures") {
+      if (COLOR_KEYS.has(f.key)) {
+        const inner = f.filled
+          ? `<div class="color-swatch-row"><span class="color-swatch" style="background:${escapeHtml(f.value)}"></span><span class="field-card-value">${escapeHtml(f.value)}</span></div>`
+          : `<div class="field-card-value empty">Not yet provided</div>`;
+        return wrapCard(f, inner);
+      }
+      if (CHECKBOX_FIELD_OPTIONS[f.key]) {
         const inner = f.filled
           ? `<div class="chip-list">${f.value.split(",").map((v) => v.trim()).filter(Boolean).map((v) => `<span class="chip">${escapeHtml(v)}</span>`).join("")}</div>`
           : `<div class="field-card-value empty">Not yet provided</div>`;
-        return `
-          <div class="field-card ${f.filled ? '' : 'field-card--empty'}" data-key="${f.key}">
-            <div class="field-card-label">${escapeHtml(f.label)}${f.required ? '<span class="req-dot" title="Required"></span>' : ''}</div>
-            ${inner}
-          </div>
-        `;
+        return wrapCard(f, inner);
       }
       const valueHtml = f.filled ? escapeHtml(f.value) : "Not yet provided";
+      return wrapCard(f, `<div class="field-card-value ${f.filled ? '' : 'empty'}">${valueHtml}</div>`);
+    }
+
+    function wrapCard(f, innerHtml) {
       return `
         <div class="field-card ${f.filled ? '' : 'field-card--empty'}" data-key="${f.key}">
           <div class="field-card-label">${escapeHtml(f.label)}${f.required ? '<span class="req-dot" title="Required"></span>' : ''}</div>
-          <div class="field-card-value ${f.filled ? '' : 'empty'}">${valueHtml}</div>
+          ${innerHtml}
         </div>
       `;
     }
@@ -448,6 +490,7 @@
       if (currentView === "list") renderList();
       else if (currentView === "gallery") renderGallery();
       else if (currentView === "kanban") renderKanban();
+      updateUnsavedBar();
     }
 
     function switchView(view) {
@@ -465,6 +508,25 @@
       btn.addEventListener("click", () => switchView(btn.dataset.view));
     });
 
+    // Tracks whether any card elsewhere on the page is mid-edit, so
+    // Cancel-on-one-card never has to guess whether it's safe to fully
+    // re-render (it isn't, if something else is unsaved).
+    function updateUnsavedBar() {
+      const count = document.querySelectorAll(".field-card.editing").length;
+      document.getElementById("unsavedBar").classList.toggle("hidden", count === 0);
+    }
+    document.getElementById("discardAllBtn").addEventListener("click", () => {
+      renderCurrentView();
+    });
+
+    // Reverts ONE card back to its display state, using the last-loaded
+    // value — never touches any other card that might also be mid-edit.
+    function cancelEdit(card, key) {
+      const field = findFieldByKey(key);
+      card.outerHTML = fieldCardHtml(field);
+      updateUnsavedBar();
+    }
+
     // Click-to-edit, delegated so it works whether the card is in the List,
     // a Gallery slide, or a Kanban detail modal appended later.
     document.addEventListener("click", (e) => {
@@ -479,111 +541,234 @@
       if (!field) return;
 
       if (key === "logo_url") {
-        // Logos are uploaded, never typed — hand off straight to the real
-        // upload control instead of opening a text editor for a URL.
         document.getElementById("logoInput").click();
+        return;
+      }
+
+      if (LONG_TEXT_KEYS.has(key)) {
+        openLongTextModal(field);
         return;
       }
 
       card.classList.add("editing");
 
       if (key === "font_names") {
-        const current = field.value || "";
-        const isCustom = !!current && !FONT_OPTIONS.includes(current);
-        card.innerHTML = `
-          <div class="field-card-label">${escapeHtml(field.label)}${field.required ? '<span class="req-dot"></span>' : ''}</div>
-          <select class="field-edit-select">
-            <option value="">Choose a font...</option>
-            ${FONT_OPTIONS.map((opt) => `<option value="${opt}" style="font-family:'${opt}'" ${opt === current ? "selected" : ""}>${opt}</option>`).join("")}
-            <option value="__custom__" ${isCustom ? "selected" : ""}>Custom...</option>
-          </select>
-          <div class="font-preview" style="font-family:'${isCustom ? current : (current || FONT_OPTIONS[0])}', system-ui, sans-serif">Aa Bb Cc — the quick brown fox jumps</div>
-          <input type="text" class="field-edit-input field-custom-font ${isCustom ? '' : 'hidden'}" placeholder="Type a font name" value="${isCustom ? escapeHtml(current) : ''}" />
-          <div class="field-edit-actions">
-            <button class="field-save-btn" type="button">Save</button>
-            <button class="field-cancel-btn" type="button">Cancel</button>
-          </div>
-        `;
-        const select = card.querySelector(".field-edit-select");
-        const customInput = card.querySelector(".field-custom-font");
-        const previewBox = card.querySelector(".font-preview");
-        select.addEventListener("change", () => {
-          const isNowCustom = select.value === "__custom__";
-          customInput.classList.toggle("hidden", !isNowCustom);
-          if (isNowCustom) {
-            customInput.focus();
-            previewBox.style.fontFamily = `'${customInput.value || "Inter"}', system-ui, sans-serif`;
-          } else {
-            previewBox.style.fontFamily = `'${select.value || FONT_OPTIONS[0]}', system-ui, sans-serif`;
-          }
-        });
-        customInput.addEventListener("input", () => {
-          previewBox.style.fontFamily = `'${customInput.value || "Inter"}', system-ui, sans-serif`;
-        });
-        card.querySelector(".field-save-btn").addEventListener("click", async (ev) => {
-          ev.stopPropagation();
-          const val = select.value === "__custom__" ? customInput.value.trim() : select.value;
-          await saveField(key, val, card);
-        });
-        card.querySelector(".field-cancel-btn").addEventListener("click", (ev) => {
-          ev.stopPropagation();
-          renderCurrentView();
-        });
+        renderFontEdit(card, field);
+        updateUnsavedBar();
         return;
       }
 
-      if (key === "content_natures") {
-        const selected = new Set((field.value || "").split(",").map((v) => v.trim()).filter(Boolean));
-        card.innerHTML = `
-          <div class="field-card-label">${escapeHtml(field.label)}${field.required ? '<span class="req-dot"></span>' : ''}</div>
-          <div class="checkbox-list">
-            ${CONTENT_NATURE_OPTIONS.map((opt) => `
-              <label class="checkbox-item">
-                <input type="checkbox" value="${escapeHtml(opt)}" ${selected.has(opt) ? "checked" : ""} /> ${escapeHtml(opt)}
-              </label>
-            `).join("")}
-          </div>
-          <div class="field-edit-error hidden"></div>
-          <div class="field-edit-actions">
-            <button class="field-save-btn" type="button">Save</button>
-            <button class="field-cancel-btn" type="button">Cancel</button>
-          </div>
-        `;
-        card.querySelector(".field-save-btn").addEventListener("click", async (ev) => {
-          ev.stopPropagation();
-          const checked = [...card.querySelectorAll('input[type="checkbox"]:checked')].map((cb) => cb.value);
-          await saveField(key, checked.join(", "), card);
-        });
-        card.querySelector(".field-cancel-btn").addEventListener("click", (ev) => {
-          ev.stopPropagation();
-          renderCurrentView();
-        });
+      if (CHECKBOX_FIELD_OPTIONS[key]) {
+        renderCheckboxEdit(card, field, CHECKBOX_FIELD_OPTIONS[key]);
+        updateUnsavedBar();
+        return;
+      }
+
+      if (SELECT_FIELD_OPTIONS[key]) {
+        renderSelectEdit(card, field, SELECT_FIELD_OPTIONS[key]);
+        updateUnsavedBar();
+        return;
+      }
+
+      if (key === "posting_time") {
+        renderTimeEdit(card, field);
+        updateUnsavedBar();
+        return;
+      }
+
+      if (COLOR_KEYS.has(key)) {
+        renderColorEdit(card, field);
+        updateUnsavedBar();
         return;
       }
 
       if (SOURCE_URL_KEYS.has(key)) {
-        card.innerHTML = `
-          <div class="field-card-label">${escapeHtml(field.label)}${field.required ? '<span class="req-dot"></span>' : ''}</div>
-          <input type="url" class="field-edit-input" placeholder="https://example.com" value="${escapeHtml(field.value || "")}" />
-          <div class="field-edit-error hidden"></div>
-          <div class="field-edit-actions">
-            <button class="field-save-btn" type="button">Save</button>
-            <button class="field-cancel-btn" type="button">Cancel</button>
-          </div>
-        `;
-        card.querySelector(".field-edit-input").focus();
-        card.querySelector(".field-save-btn").addEventListener("click", async (ev) => {
-          ev.stopPropagation();
-          const newVal = card.querySelector(".field-edit-input").value.trim();
-          await saveField(key, newVal, card);
-        });
-        card.querySelector(".field-cancel-btn").addEventListener("click", (ev) => {
-          ev.stopPropagation();
-          renderCurrentView();
-        });
+        renderUrlEdit(card, field);
+        updateUnsavedBar();
         return;
       }
 
+      renderTextareaEdit(card, field);
+      updateUnsavedBar();
+    }
+
+    function renderFontEdit(card, field) {
+      const current = field.value || "";
+      const isCustom = !!current && !FONT_OPTIONS.includes(current);
+      card.innerHTML = `
+        <div class="field-card-label">${escapeHtml(field.label)}${field.required ? '<span class="req-dot"></span>' : ''}</div>
+        <select class="field-edit-select">
+          <option value="">Choose a font...</option>
+          ${FONT_OPTIONS.map((opt) => `<option value="${opt}" style="font-family:'${opt}'" ${opt === current ? "selected" : ""}>${opt}</option>`).join("")}
+          <option value="__custom__" ${isCustom ? "selected" : ""}>Custom...</option>
+        </select>
+        <div class="font-preview" style="font-family:'${isCustom ? current : (current || FONT_OPTIONS[0])}', system-ui, sans-serif">Aa Bb Cc — the quick brown fox jumps</div>
+        <input type="text" class="field-edit-input field-custom-font ${isCustom ? '' : 'hidden'}" placeholder="Type a font name" value="${isCustom ? escapeHtml(current) : ''}" />
+        <div class="field-edit-error hidden"></div>
+        <div class="field-edit-actions">
+          <button class="field-save-btn" type="button">Save</button>
+          <button class="field-cancel-btn" type="button">Cancel</button>
+        </div>
+      `;
+      const select = card.querySelector(".field-edit-select");
+      const customInput = card.querySelector(".field-custom-font");
+      const previewBox = card.querySelector(".font-preview");
+      select.addEventListener("change", () => {
+        const isNowCustom = select.value === "__custom__";
+        customInput.classList.toggle("hidden", !isNowCustom);
+        previewBox.style.fontFamily = `'${isNowCustom ? (customInput.value || "Inter") : (select.value || FONT_OPTIONS[0])}', system-ui, sans-serif`;
+        if (isNowCustom) customInput.focus();
+      });
+      customInput.addEventListener("input", () => {
+        previewBox.style.fontFamily = `'${customInput.value || "Inter"}', system-ui, sans-serif`;
+      });
+      card.querySelector(".field-save-btn").addEventListener("click", async (ev) => {
+        ev.stopPropagation();
+        const val = select.value === "__custom__" ? customInput.value.trim() : select.value;
+        await saveField(field.key, val, card);
+      });
+      card.querySelector(".field-cancel-btn").addEventListener("click", (ev) => {
+        ev.stopPropagation();
+        cancelEdit(card, field.key);
+      });
+    }
+
+    function renderCheckboxEdit(card, field, options) {
+      const selected = new Set((field.value || "").split(",").map((v) => v.trim()).filter(Boolean));
+      card.innerHTML = `
+        <div class="field-card-label">${escapeHtml(field.label)}${field.required ? '<span class="req-dot"></span>' : ''}</div>
+        <div class="checkbox-list">
+          ${options.map((opt) => `
+            <label class="checkbox-item">
+              <input type="checkbox" value="${escapeHtml(opt)}" ${selected.has(opt) ? "checked" : ""} /> ${escapeHtml(opt)}
+            </label>
+          `).join("")}
+        </div>
+        <div class="field-edit-error hidden"></div>
+        <div class="field-edit-actions">
+          <button class="field-save-btn" type="button">Save</button>
+          <button class="field-cancel-btn" type="button">Cancel</button>
+        </div>
+      `;
+      card.querySelector(".field-save-btn").addEventListener("click", async (ev) => {
+        ev.stopPropagation();
+        const checked = [...card.querySelectorAll('input[type="checkbox"]:checked')].map((cb) => cb.value);
+        await saveField(field.key, checked.join(", "), card);
+      });
+      card.querySelector(".field-cancel-btn").addEventListener("click", (ev) => {
+        ev.stopPropagation();
+        cancelEdit(card, field.key);
+      });
+    }
+
+    function renderSelectEdit(card, field, options) {
+      const current = field.value || "";
+      const isCustom = !!current && !options.includes(current);
+      card.innerHTML = `
+        <div class="field-card-label">${escapeHtml(field.label)}${field.required ? '<span class="req-dot"></span>' : ''}</div>
+        <select class="field-edit-select">
+          <option value="">Choose...</option>
+          ${options.map((opt) => `<option value="${opt}" ${opt === current ? "selected" : ""}>${opt}</option>`).join("")}
+          <option value="__custom__" ${isCustom ? "selected" : ""}>Custom...</option>
+        </select>
+        <input type="text" class="field-edit-input field-custom-select ${isCustom ? '' : 'hidden'}" placeholder="Type your own" value="${isCustom ? escapeHtml(current) : ''}" />
+        <div class="field-edit-error hidden"></div>
+        <div class="field-edit-actions">
+          <button class="field-save-btn" type="button">Save</button>
+          <button class="field-cancel-btn" type="button">Cancel</button>
+        </div>
+      `;
+      const select = card.querySelector(".field-edit-select");
+      const customInput = card.querySelector(".field-custom-select");
+      select.addEventListener("change", () => {
+        const isNowCustom = select.value === "__custom__";
+        customInput.classList.toggle("hidden", !isNowCustom);
+        if (isNowCustom) customInput.focus();
+      });
+      card.querySelector(".field-save-btn").addEventListener("click", async (ev) => {
+        ev.stopPropagation();
+        const val = select.value === "__custom__" ? customInput.value.trim() : select.value;
+        await saveField(field.key, val, card);
+      });
+      card.querySelector(".field-cancel-btn").addEventListener("click", (ev) => {
+        ev.stopPropagation();
+        cancelEdit(card, field.key);
+      });
+    }
+
+    function renderTimeEdit(card, field) {
+      card.innerHTML = `
+        <div class="field-card-label">${escapeHtml(field.label)}${field.required ? '<span class="req-dot"></span>' : ''}</div>
+        <input type="time" class="field-edit-input" value="${escapeHtml(field.value || "")}" />
+        <div class="field-edit-error hidden"></div>
+        <div class="field-edit-actions">
+          <button class="field-save-btn" type="button">Save</button>
+          <button class="field-cancel-btn" type="button">Cancel</button>
+        </div>
+      `;
+      card.querySelector(".field-edit-input").focus();
+      card.querySelector(".field-save-btn").addEventListener("click", async (ev) => {
+        ev.stopPropagation();
+        const newVal = card.querySelector(".field-edit-input").value;
+        await saveField(field.key, newVal, card);
+      });
+      card.querySelector(".field-cancel-btn").addEventListener("click", (ev) => {
+        ev.stopPropagation();
+        cancelEdit(card, field.key);
+      });
+    }
+
+    function renderColorEdit(card, field) {
+      const current = field.value || "";
+      card.innerHTML = `
+        <div class="field-card-label">${escapeHtml(field.label)}${field.required ? '<span class="req-dot"></span>' : ''}</div>
+        <div class="color-edit-row">
+          <input type="color" class="color-edit-picker" value="${isValidHex(current) && current.length === 7 ? current : '#ffffff'}">
+          <input type="text" class="field-edit-input color-edit-hex" placeholder="#rrggbb" value="${escapeHtml(current)}">
+        </div>
+        <div class="field-edit-error hidden"></div>
+        <div class="field-edit-actions">
+          <button class="field-save-btn" type="button">Save</button>
+          <button class="field-cancel-btn" type="button">Cancel</button>
+        </div>
+      `;
+      const picker = card.querySelector(".color-edit-picker");
+      const hexInput = card.querySelector(".color-edit-hex");
+      picker.addEventListener("input", () => { hexInput.value = picker.value; });
+      hexInput.addEventListener("input", () => { if (isValidHex(hexInput.value) && hexInput.value.length === 7) picker.value = hexInput.value; });
+      card.querySelector(".field-save-btn").addEventListener("click", async (ev) => {
+        ev.stopPropagation();
+        await saveField(field.key, hexInput.value.trim(), card);
+      });
+      card.querySelector(".field-cancel-btn").addEventListener("click", (ev) => {
+        ev.stopPropagation();
+        cancelEdit(card, field.key);
+      });
+    }
+
+    function renderUrlEdit(card, field) {
+      card.innerHTML = `
+        <div class="field-card-label">${escapeHtml(field.label)}${field.required ? '<span class="req-dot"></span>' : ''}</div>
+        <input type="url" class="field-edit-input" placeholder="https://example.com" value="${escapeHtml(field.value || "")}" />
+        <div class="field-edit-error hidden"></div>
+        <div class="field-edit-actions">
+          <button class="field-save-btn" type="button">Save</button>
+          <button class="field-cancel-btn" type="button">Cancel</button>
+        </div>
+      `;
+      card.querySelector(".field-edit-input").focus();
+      card.querySelector(".field-save-btn").addEventListener("click", async (ev) => {
+        ev.stopPropagation();
+        const newVal = card.querySelector(".field-edit-input").value.trim();
+        await saveField(field.key, newVal, card);
+      });
+      card.querySelector(".field-cancel-btn").addEventListener("click", (ev) => {
+        ev.stopPropagation();
+        cancelEdit(card, field.key);
+      });
+    }
+
+    function renderTextareaEdit(card, field) {
       card.innerHTML = `
         <div class="field-card-label">${escapeHtml(field.label)}${field.required ? '<span class="req-dot"></span>' : ''}</div>
         <textarea class="field-edit-input" rows="3">${escapeHtml(field.value || "")}</textarea>
@@ -597,17 +782,54 @@
       card.querySelector(".field-save-btn").addEventListener("click", async (ev) => {
         ev.stopPropagation();
         const newVal = card.querySelector(".field-edit-input").value;
-        await saveField(key, newVal, card);
+        await saveField(field.key, newVal, card);
       });
       card.querySelector(".field-cancel-btn").addEventListener("click", (ev) => {
         ev.stopPropagation();
-        renderCurrentView();
+        cancelEdit(card, field.key);
       });
     }
 
-    async function saveField(key, value, card) {
-      const saveBtn = card.querySelector(".field-save-btn");
-      const errorEl = card.querySelector(".field-edit-error");
+    // Paragraph-length fields open here instead of a cramped inline
+    // textarea. Only one modal at a time — opening this one closes any
+    // Kanban detail modal already on screen, same assumption saveField
+    // already makes about "the" modal-backdrop.
+    function openLongTextModal(field) {
+      const existing = document.querySelector(".modal-backdrop");
+      if (existing) existing.remove();
+
+      const backdrop = document.createElement("div");
+      backdrop.className = "modal-backdrop";
+      backdrop.innerHTML = `
+        <div class="modal-box">
+          <div class="modal-box-head">
+            <h3>${escapeHtml(field.label)}${field.required ? '<span class="req-dot" style="margin-left:8px"></span>' : ''}</h3>
+            <button class="modal-close">&times;</button>
+          </div>
+          <textarea class="field-edit-input" rows="10">${escapeHtml(field.value || "")}</textarea>
+          <div class="field-edit-error hidden"></div>
+          <div class="field-edit-actions">
+            <button class="field-save-btn" type="button">Save</button>
+            <button class="field-cancel-btn" type="button">Cancel</button>
+          </div>
+        </div>
+      `;
+      const close = () => backdrop.remove();
+      backdrop.addEventListener("click", (e) => { if (e.target === backdrop) close(); });
+      backdrop.querySelector(".modal-close").addEventListener("click", close);
+      backdrop.querySelector(".field-cancel-btn").addEventListener("click", close);
+      backdrop.querySelector(".field-save-btn").addEventListener("click", async (ev) => {
+        ev.stopPropagation();
+        const val = backdrop.querySelector(".field-edit-input").value;
+        await saveField(field.key, val, backdrop);
+      });
+      document.body.appendChild(backdrop);
+      backdrop.querySelector(".field-edit-input").focus();
+    }
+
+    async function saveField(key, value, container) {
+      const saveBtn = container.querySelector(".field-save-btn");
+      const errorEl = container.querySelector(".field-edit-error");
       saveBtn.disabled = true;
       saveBtn.textContent = "Saving...";
       if (errorEl) errorEl.classList.add("hidden");
@@ -630,8 +852,8 @@
         return;
       }
 
-      // Close any open detail modal — the Kanban board behind it refreshes
-      // via load(), reopening isn't necessary for the edit to be reflected.
+      // Close any open modal (Kanban detail or the long-text editor) — the
+      // underlying view refreshes via load(), reopening isn't necessary.
       const modal = document.querySelector(".modal-backdrop");
       if (modal) modal.remove();
       await load();
@@ -729,11 +951,7 @@
       reader.readAsDataURL(file);
     });
 
-    async function load() {
-      const res = await fetch("/.netlify/functions/intake-data");
-      if (res.status === 401) { window.location.href = "/"; return; }
-      const data = await res.json();
-
+    function applyPayload(data) {
       applyBrand(data.brand, data.businessName);
       document.getElementById("pctLabel").textContent = data.completenessPct + "% complete";
       const barFillEl = document.getElementById("barFill");
@@ -746,6 +964,28 @@
 
       sections = data.sections;
       renderCurrentView();
+    }
+
+    // Cache-first paint, then a silent background check against the real
+    // data. Only re-renders if something actually changed, and never while
+    // a card is mid-edit (that would blow away unsaved work).
+    async function load() {
+      const res = await fetch("/.netlify/functions/intake-data");
+      if (res.status === 401) { window.location.href = "/"; return; }
+      const data = await res.json();
+      applyPayload(data);
+
+      fetch("/.netlify/functions/intake-data?fresh=true")
+        .then((r) => (r.ok ? r.json() : null))
+        .then((fresh) => {
+          if (!fresh) return;
+          const changed = JSON.stringify(fresh) !== JSON.stringify(data);
+          const editingInProgress = document.querySelectorAll(".field-card.editing").length > 0;
+          if (changed && !editingInProgress) {
+            applyPayload(fresh);
+          }
+        })
+        .catch(() => {});
     }
 
     load();
