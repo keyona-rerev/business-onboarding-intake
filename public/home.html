@@ -28,12 +28,37 @@
   .top-actions a { font-size: 13px; color: var(--body-text); text-decoration: none; margin-left: 16px; }
   .top-actions a:hover { text-decoration: underline; }
 
-  .overview { background: #fff; border-radius: 16px; padding: 24px; box-shadow: 0 2px 16px rgba(0,0,0,0.06); margin-bottom: 24px; }
+  .overview { background: #fff; border-radius: 16px; padding: 24px; box-shadow: 0 2px 16px rgba(0,0,0,0.06); margin-bottom: 18px; }
   .overview .pct { font-size: 30px; font-weight: 800; letter-spacing: -0.02em; }
   .overview .pct-sub { font-size: 13px; color: var(--body-text); margin-top: 2px; }
   .bar-bg { background: #e9edee; border-radius: 8px; height: 12px; overflow: hidden; margin: 14px 0 6px; }
   .bar-fill { background: linear-gradient(90deg, var(--accent-a), var(--accent-b)); height: 100%; transition: width 0.4s ease; border-radius: 8px; }
   .overview .add-more { display: inline-block; margin-top: 10px; font-size: 13px; font-weight: 600; color: var(--accent-b); text-decoration: none; }
+
+  /* Brand panel — website color pull + logo upload */
+  .brand-panel { background: #fff; border-radius: 16px; padding: 22px 24px; box-shadow: 0 2px 16px rgba(0,0,0,0.06); margin-bottom: 24px; }
+  .brand-panel h3 { margin: 0 0 4px; font-size: 15px; }
+  .brand-panel .brand-sub { font-size: 13px; color: var(--body-text); margin: 0 0 16px; }
+  .brand-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+  .brand-row input[type="url"] { flex: 1; min-width: 200px; padding: 10px 12px; border: 1px solid #dde3e3; border-radius: 8px; font-size: 13px; font-family: inherit; }
+  .brand-row button {
+    padding: 10px 16px; border: none; border-radius: 8px; color: #fff; font-weight: 600; font-size: 13px; cursor: pointer;
+    background: linear-gradient(90deg, var(--accent-a), var(--accent-b));
+  }
+  .brand-row button:disabled { opacity: 0.6; cursor: default; }
+  .color-candidates { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .swatch { width: 34px; height: 34px; border-radius: 8px; border: 2px solid #fff; box-shadow: 0 0 0 1px #dde3e3; cursor: pointer; }
+  .candidate-note { font-size: 12px; color: var(--body-text); font-style: italic; margin: 0 0 12px; }
+  .color-slots label { display: flex; flex-direction: column; font-size: 11px; color: var(--body-text); gap: 4px; }
+  .color-slots input[type="color"] { width: 44px; height: 32px; border: 1px solid #dde3e3; border-radius: 6px; padding: 2px; cursor: pointer; }
+  .logo-row { align-items: center; }
+  .logo-upload-label {
+    display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--accent-b);
+    border: 1px dashed var(--accent-b); border-radius: 8px; padding: 9px 16px; cursor: pointer;
+  }
+  .logo-upload-label input[type="file"] { display: none; }
+  #logoStatus { font-size: 12px; color: var(--body-text); }
+  .logo-preview { height: 32px; width: 32px; border-radius: 6px; object-fit: cover; }
 
   .view-toggle { display: flex; gap: 8px; margin-bottom: 20px; }
   .view-toggle button {
@@ -41,6 +66,8 @@
     color: var(--body-text); font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s;
   }
   .view-toggle button.active { background: linear-gradient(90deg, var(--accent-a), var(--accent-b)); color: #fff; border-color: transparent; }
+
+  .section-icon { width: 16px; height: 16px; vertical-align: -3px; margin-right: 6px; color: var(--accent-b); }
 
   /* Section card shell (List + Gallery) */
   .section-card { background: #fff; border-radius: 16px; padding: 24px; margin-bottom: 18px; box-shadow: 0 2px 16px rgba(0,0,0,0.05); }
@@ -53,17 +80,27 @@
   .pct-pill.pct-complete { background: rgba(26,158,158,0.18); }
   .pct-pill.pct-empty { background: rgba(61,81,102,0.1); color: var(--body-text); }
 
-  /* Field cards — the actual "profile card" unit, reused everywhere */
+  /* Field cards — the "profile card" unit, reused everywhere, editable everywhere */
   .field-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
   .field-card {
     border: 1px solid #e9edee; border-radius: 12px; padding: 14px 16px; background: #fbfdfd;
-    transition: box-shadow 0.15s, border-color 0.15s;
+    transition: box-shadow 0.15s, border-color 0.15s; cursor: pointer;
   }
+  .field-card:hover { border-color: rgba(124,58,237,0.35); box-shadow: 0 2px 10px rgba(0,0,0,0.06); }
   .field-card.field-card--empty { background: repeating-linear-gradient(135deg, #fafafa, #fafafa 8px, #f4f4f4 8px, #f4f4f4 16px); border-style: dashed; }
+  .field-card.editing { cursor: default; background: #fff; border-color: var(--accent-b); }
   .field-card-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--body-text); margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
   .req-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent-b); display: inline-block; }
   .field-card-value { font-size: 14px; line-height: 1.45; color: var(--primary); }
   .field-card-value.empty { color: #b0b6ba; font-style: italic; }
+  .field-edit-input {
+    width: 100%; font-family: inherit; font-size: 13px; padding: 8px; border: 1px solid #dde3e3; border-radius: 6px;
+    resize: vertical; margin-bottom: 8px;
+  }
+  .field-edit-actions { display: flex; gap: 8px; }
+  .field-edit-actions button { font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 6px; border: none; cursor: pointer; }
+  .field-save-btn { background: var(--accent-b); color: #fff; }
+  .field-cancel-btn { background: #eee; color: var(--body-text); }
 
   /* Gallery view */
   .gallery { background: #fff; border-radius: 16px; padding: 32px; box-shadow: 0 2px 16px rgba(0,0,0,0.05); }
@@ -84,18 +121,18 @@
     cursor: pointer; border: 1px solid transparent; transition: box-shadow 0.15s, border-color 0.15s, transform 0.1s;
   }
   .kanban-card:hover { box-shadow: 0 4px 18px rgba(0,0,0,0.1); border-color: rgba(124,58,237,0.25); transform: translateY(-1px); }
-  .kanban-card h5 { margin: 0 0 6px; font-size: 14px; }
+  .kanban-card h5 { margin: 0 0 6px; font-size: 14px; display: flex; align-items: center; }
   .kanban-card .kanban-meta { font-size: 12px; color: var(--accent-a); font-weight: 600; }
   .kanban-card .kanban-hint { font-size: 11px; color: #b0b6ba; margin-top: 8px; }
 
-  /* Detail modal (Kanban click-through, also usable anywhere) */
+  /* Detail modal (Kanban click-through) */
   .modal-backdrop {
     position: fixed; inset: 0; background: rgba(13,31,45,0.45); display: flex; align-items: center; justify-content: center;
     padding: 20px; z-index: 50;
   }
   .modal-box { background: #fff; border-radius: 18px; max-width: 640px; width: 100%; max-height: 85vh; overflow-y: auto; padding: 28px; }
   .modal-box-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
-  .modal-box-head h3 { margin: 0; font-size: 18px; }
+  .modal-box-head h3 { margin: 0; font-size: 18px; display: flex; align-items: center; }
   .modal-close { background: #f0f0f0; border: none; border-radius: 50%; width: 32px; height: 32px; font-size: 15px; cursor: pointer; color: var(--body-text); }
 
   .hidden { display: none; }
@@ -121,6 +158,30 @@
       <a class="add-more" href="/intake.html">Fill in what's missing &rarr;</a>
     </div>
 
+    <div class="brand-panel">
+      <h3>Brand — website &amp; logo</h3>
+      <p class="brand-sub">Drop in your website and we'll pull some color guesses to confirm. Upload your own logo file directly, we don't try to scrape that part.</p>
+      <div class="brand-row">
+        <input type="url" id="websiteInput" placeholder="https://yourbusiness.com" />
+        <button id="pullColorsBtn">Pull colors</button>
+      </div>
+      <div id="colorCandidates" class="color-candidates"></div>
+      <div class="brand-row color-slots">
+        <label>Primary <input type="color" id="primaryColorInput" value="#1a9e9e"></label>
+        <label>Secondary <input type="color" id="secondaryColorInput" value="#7c3aed"></label>
+        <label>Accent <input type="color" id="accentColorInput" value="#0d1f2d"></label>
+        <button id="saveColorsBtn">Save colors</button>
+      </div>
+      <div class="brand-row logo-row">
+        <label class="logo-upload-label">
+          Upload logo
+          <input type="file" id="logoInput" accept="image/png,image/jpeg,image/webp,image/svg+xml" />
+        </label>
+        <img id="logoPreview" class="logo-preview hidden" alt="Current logo" />
+        <span id="logoStatus"></span>
+      </div>
+    </div>
+
     <div class="view-toggle">
       <button data-view="list" class="active">List</button>
       <button data-view="gallery">Gallery</button>
@@ -135,6 +196,7 @@
   <script>
     let sections = [];
     let galleryIndex = 0;
+    let currentView = "list";
 
     function escapeHtml(str) {
       return String(str)
@@ -151,12 +213,36 @@
       return "pct-pill";
     }
 
+    // One icon per section, mostly so "Audience" reads as people, not a
+    // wall of text. Reused in List headers, Gallery headers, and Kanban
+    // cards so the same section always looks the same everywhere.
+    const SECTION_ICONS = {
+      "Business Identity": '<svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="1"></rect><path d="M9 21v-4h6v4M9 8h1M14 8h1M9 12h1M14 12h1"></path></svg>',
+      "Audience": '<svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 4-6 8-6s8 2 8 6"></path></svg>',
+      "Voice & Hard Rules": '<svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>',
+      "Content Structure": '<svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect></svg>',
+      "Sources": '<svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"></path><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"></path></svg>',
+      "Posting Defaults": '<svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M16 2v4M8 2v4M3 10h18"></path></svg>',
+    };
+    function sectionIcon(name) {
+      return SECTION_ICONS[name] || "";
+    }
+
+    function findFieldByKey(key) {
+      for (const s of sections) {
+        const f = s.fields.find((fld) => fld.key === key);
+        if (f) return f;
+      }
+      return null;
+    }
+
     // The one field-card renderer, reused across List, Gallery, and the
-    // Kanban detail modal, so every view shows the same "profile card" unit.
+    // Kanban detail modal. Every card is click-to-edit, right where you see
+    // it, no separate paste-and-extract detour required for a single fix.
     function fieldCardHtml(f) {
       const valueHtml = f.filled ? escapeHtml(f.value) : "Not yet provided";
       return `
-        <div class="field-card ${f.filled ? '' : 'field-card--empty'}">
+        <div class="field-card ${f.filled ? '' : 'field-card--empty'}" data-key="${f.key}">
           <div class="field-card-label">${escapeHtml(f.label)}${f.required ? '<span class="req-dot" title="Required"></span>' : ''}</div>
           <div class="field-card-value ${f.filled ? '' : 'empty'}">${valueHtml}</div>
         </div>
@@ -176,14 +262,27 @@
 
       document.getElementById("bizName").textContent = businessName || "Your Dashboard";
       const avatarSlot = document.getElementById("brandAvatar");
+      const logoPreview = document.getElementById("logoPreview");
       if (brand.logoUrl) {
-        const img = document.createElement("img");
+        avatarSlot.style.display = "none";
+        let img = document.querySelector(".brandmark img");
+        if (!img) {
+          img = document.createElement("img");
+          document.getElementById("brandmark").insertBefore(img, document.getElementById("bizName"));
+        }
         img.src = brand.logoUrl;
         img.alt = businessName || "";
-        avatarSlot.replaceWith(img);
+        logoPreview.src = brand.logoUrl;
+        logoPreview.classList.remove("hidden");
       } else {
+        avatarSlot.style.display = "flex";
         avatarSlot.textContent = (businessName || "?").trim().charAt(0).toUpperCase();
+        logoPreview.classList.add("hidden");
       }
+
+      if (brand.primaryColor) document.getElementById("primaryColorInput").value = brand.primaryColor;
+      if (brand.secondaryColor) document.getElementById("secondaryColorInput").value = brand.secondaryColor;
+      if (brand.accentColor) document.getElementById("accentColorInput").value = brand.accentColor;
     }
 
     function renderList() {
@@ -191,7 +290,7 @@
       el.innerHTML = sections.map((s) => `
         <div class="section-card">
           <div class="section-card-head">
-            <h3>${escapeHtml(s.name)}</h3>
+            <h3>${sectionIcon(s.name)}${escapeHtml(s.name)}</h3>
             <span class="${pctPillClass(s.sectionPct)}">${s.sectionPct}% complete</span>
           </div>
           ${sectionFieldGridHtml(s)}
@@ -208,7 +307,7 @@
           <div class="gallery-nav">
             <button id="prevBtn" ${galleryIndex === 0 ? "disabled" : ""}>&larr;</button>
             <div class="gallery-title">
-              <h3>${escapeHtml(s.name)}</h3>
+              <h3>${sectionIcon(s.name)}${escapeHtml(s.name)}</h3>
               <span class="${pctPillClass(s.sectionPct)}">${s.sectionPct}% complete</span>
             </div>
             <button id="nextBtn" ${galleryIndex === sections.length - 1 ? "disabled" : ""}>&rarr;</button>
@@ -234,7 +333,7 @@
       backdrop.innerHTML = `
         <div class="modal-box">
           <div class="modal-box-head">
-            <h3>${escapeHtml(s.name)} <span class="${pctPillClass(s.sectionPct)}">${s.sectionPct}%</span></h3>
+            <h3>${sectionIcon(s.name)}${escapeHtml(s.name)} <span class="${pctPillClass(s.sectionPct)}" style="margin-left:8px">${s.sectionPct}%</span></h3>
             <button class="modal-close">&times;</button>
           </div>
           ${sectionFieldGridHtml(s)}
@@ -259,9 +358,9 @@
               <h4>${label} (${list.length})</h4>
               ${list.map((s) => `
                 <div class="kanban-card" data-section="${escapeHtml(s.name)}">
-                  <h5>${escapeHtml(s.name)}</h5>
+                  <h5>${sectionIcon(s.name)}${escapeHtml(s.name)}</h5>
                   <span class="kanban-meta">${s.sectionPct}% &middot; ${s.fields.filter(f => f.filled).length}/${s.fields.length} fields</span>
-                  <div class="kanban-hint">Click to view details</div>
+                  <div class="kanban-hint">Click to view &amp; edit</div>
                 </div>
               `).join("")}
             </div>
@@ -273,25 +372,165 @@
       });
     }
 
+    function renderCurrentView() {
+      if (currentView === "list") renderList();
+      else if (currentView === "gallery") renderGallery();
+      else if (currentView === "kanban") renderKanban();
+    }
+
     function switchView(view) {
+      currentView = view;
       document.getElementById("listView").classList.toggle("hidden", view !== "list");
       document.getElementById("galleryView").classList.toggle("hidden", view !== "gallery");
       document.getElementById("kanbanView").classList.toggle("hidden", view !== "kanban");
       document.querySelectorAll(".view-toggle button").forEach((b) => {
         b.classList.toggle("active", b.dataset.view === view);
       });
-      if (view === "gallery") renderGallery();
-      if (view === "kanban") renderKanban();
+      renderCurrentView();
     }
 
     document.querySelectorAll(".view-toggle button").forEach((btn) => {
       btn.addEventListener("click", () => switchView(btn.dataset.view));
     });
 
+    // Click-to-edit, delegated so it works whether the card is in the List,
+    // a Gallery slide, or a Kanban detail modal appended later.
+    document.addEventListener("click", (e) => {
+      const card = e.target.closest(".field-card");
+      if (!card || card.classList.contains("editing")) return;
+      startEdit(card);
+    });
+
+    function startEdit(card) {
+      const key = card.dataset.key;
+      const field = findFieldByKey(key);
+      if (!field) return;
+      card.classList.add("editing");
+      card.innerHTML = `
+        <div class="field-card-label">${escapeHtml(field.label)}${field.required ? '<span class="req-dot"></span>' : ''}</div>
+        <textarea class="field-edit-input" rows="3">${escapeHtml(field.value || "")}</textarea>
+        <div class="field-edit-actions">
+          <button class="field-save-btn" type="button">Save</button>
+          <button class="field-cancel-btn" type="button">Cancel</button>
+        </div>
+      `;
+      card.querySelector(".field-edit-input").focus();
+      card.querySelector(".field-save-btn").addEventListener("click", async (ev) => {
+        ev.stopPropagation();
+        const newVal = card.querySelector(".field-edit-input").value;
+        await saveField(key, newVal, card);
+      });
+      card.querySelector(".field-cancel-btn").addEventListener("click", (ev) => {
+        ev.stopPropagation();
+        renderCurrentView();
+      });
+    }
+
+    async function saveField(key, value, card) {
+      const saveBtn = card.querySelector(".field-save-btn");
+      saveBtn.disabled = true;
+      saveBtn.textContent = "Saving...";
+      const res = await fetch("/.netlify/functions/update-field", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ key, value }),
+      });
+      if (res.status === 401) { window.location.href = "/"; return; }
+      // Close any open detail modal — the Kanban board behind it refreshes
+      // via load(), reopening isn't necessary for the edit to be reflected.
+      const modal = document.querySelector(".modal-backdrop");
+      if (modal) modal.remove();
+      await load();
+    }
+
     document.getElementById("logoutLink").addEventListener("click", async (e) => {
       e.preventDefault();
       document.cookie = "intake_session=; Max-Age=0; Path=/;";
       window.location.href = "/";
+    });
+
+    document.getElementById("pullColorsBtn").addEventListener("click", async () => {
+      const url = document.getElementById("websiteInput").value.trim();
+      if (!url) { alert("Enter a website URL first."); return; }
+      const btn = document.getElementById("pullColorsBtn");
+      btn.disabled = true;
+      btn.textContent = "Pulling...";
+      const el = document.getElementById("colorCandidates");
+      el.innerHTML = "";
+      try {
+        const res = await fetch("/.netlify/functions/extract-brand-colors", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url }),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.candidates || data.candidates.length === 0) {
+          el.innerHTML = `<p class="candidate-note">${escapeHtml(data.error || data.note || "No distinct colors found — enter them manually below.")}</p>`;
+        } else {
+          el.innerHTML = data.candidates.map((c) => `<button type="button" class="swatch" style="background:${c.hex}" data-hex="${c.hex}" title="${c.hex}"></button>`).join("");
+          let slot = 0;
+          const slotInputs = [
+            document.getElementById("primaryColorInput"),
+            document.getElementById("secondaryColorInput"),
+            document.getElementById("accentColorInput"),
+          ];
+          el.querySelectorAll(".swatch").forEach((sw) => {
+            sw.addEventListener("click", () => {
+              slotInputs[slot % 3].value = sw.dataset.hex;
+              slot++;
+            });
+          });
+        }
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Pull colors";
+      }
+    });
+
+    document.getElementById("saveColorsBtn").addEventListener("click", async () => {
+      const btn = document.getElementById("saveColorsBtn");
+      btn.disabled = true;
+      btn.textContent = "Saving...";
+      try {
+        await fetch("/.netlify/functions/set-brand", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            primaryColor: document.getElementById("primaryColorInput").value,
+            secondaryColor: document.getElementById("secondaryColorInput").value,
+            accentColor: document.getElementById("accentColorInput").value,
+            websiteUrl: document.getElementById("websiteInput").value.trim() || null,
+          }),
+        });
+        await load();
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Save colors";
+      }
+    });
+
+    document.getElementById("logoInput").addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const statusEl = document.getElementById("logoStatus");
+      statusEl.textContent = "Uploading...";
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const base64 = reader.result.split(",")[1];
+        const res = await fetch("/.netlify/functions/upload-logo", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ base64, mimeType: file.type }),
+        });
+        const data = await res.json();
+        if (res.ok) {
+          statusEl.textContent = "Logo updated.";
+          await load();
+        } else {
+          statusEl.textContent = data.error || "Upload failed.";
+        }
+      };
+      reader.readAsDataURL(file);
     });
 
     async function load() {
@@ -305,9 +544,10 @@
       document.getElementById("pctSub").textContent = data.completenessPct === 100
         ? "Everything's filled in, required and optional."
         : "Required and optional fields both count toward this number.";
+      document.getElementById("websiteInput").value = data.websiteUrl || "";
 
       sections = data.sections;
-      renderList();
+      renderCurrentView();
     }
 
     load();
