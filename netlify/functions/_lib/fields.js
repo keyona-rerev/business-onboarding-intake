@@ -1,6 +1,9 @@
 // Single source of truth for the intake checklist.
-// Used by both intake-submit (extraction target) and completeness (scoring),
-// so the two can never silently drift apart.
+// Used by both intake-submit (extraction target), completeness (scoring),
+// and intake-data (dashboard display), so all three can never silently
+// drift apart.
+
+const MIN_SOURCE_EXAMPLES = 3;
 
 const FIELDS = [
   { key: "business_name", label: "Business name", section: "Business Identity", required: true },
@@ -24,7 +27,12 @@ const FIELDS = [
   { key: "content_lanes", label: "Content lanes / recurring themes (2-3)", section: "Content Structure", required: true },
   { key: "content_natures", label: "Content nature / classification tiers", section: "Content Structure", required: false },
 
-  { key: "source_feeds", label: "Starting newsletters / RSS feeds / sites", section: "Sources", required: false },
+  {
+    key: "source_feeds",
+    label: `At least ${MIN_SOURCE_EXAMPLES} example sources (paste full articles or just drop the URLs) that show the kind of content the system should go after`,
+    section: "Sources",
+    required: true,
+  },
 
   { key: "posting_timezone", label: "Timezone", section: "Posting Defaults", required: true },
   { key: "posting_time", label: "Preferred posting time", section: "Posting Defaults", required: true },
@@ -33,4 +41,27 @@ const FIELDS = [
 
 const REQUIRED_FIELDS = FIELDS.filter((f) => f.required);
 
-module.exports = { FIELDS, REQUIRED_FIELDS };
+// Values for list-shaped fields are stored as comma-separated strings (see
+// intake-submit's extraction prompt). This counts real entries, ignoring
+// stray commas/whitespace, so "3 items" actually means 3 items.
+function countListEntries(raw) {
+  if (!raw) return 0;
+  return String(raw)
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean).length;
+}
+
+// Whether a field counts as "done" for completeness purposes. Almost every
+// field just needs a non-empty value, but source_feeds has its own bar:
+// Keyona wants a minimum number of example sources, not just one, so a
+// single pasted URL shouldn't read as "Sources: complete."
+function isFieldSatisfied(field, value) {
+  if (value === null || value === undefined || value === "") return false;
+  if (field.key === "source_feeds") {
+    return countListEntries(value) >= MIN_SOURCE_EXAMPLES;
+  }
+  return true;
+}
+
+module.exports = { FIELDS, REQUIRED_FIELDS, isFieldSatisfied, countListEntries, MIN_SOURCE_EXAMPLES };
