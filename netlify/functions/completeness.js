@@ -1,7 +1,7 @@
 const { Client } = require("pg");
 const { createClient } = require("@supabase/supabase-js");
 const { sessionFromEvent } = require("./_lib/auth");
-const { REQUIRED_FIELDS, isFieldSatisfied } = require("./_lib/fields");
+const { FIELDS, isFieldSatisfied } = require("./_lib/fields");
 
 const wayfinder = createClient(
   process.env.WAYFINDER_SUPABASE_URL,
@@ -25,15 +25,16 @@ exports.handler = async (event) => {
     await client.end();
   }
 
-  const missing = REQUIRED_FIELDS.filter((f) => !isFieldSatisfied(f, record[f.key]));
-  const filledCount = REQUIRED_FIELDS.length - missing.length;
-  const pct = Math.round((filledCount / REQUIRED_FIELDS.length) * 100);
+  // 100% means every field is filled — required AND optional. Counting
+  // only required fields let a section (or the whole business) read as
+  // "done" while colors, logo, fonts, and other optional fields sat empty.
+  // That's not "done," so the math now covers all of FIELDS, not just
+  // REQUIRED_FIELDS.
+  const missing = FIELDS.filter((f) => !isFieldSatisfied(f, record[f.key]));
+  const filledCount = FIELDS.length - missing.length;
+  const pct = Math.round((filledCount / FIELDS.length) * 100);
 
-  // Deterministic, not AI-judged — a field either meets its bar or it
-  // doesn't (and for source_feeds, that bar is a minimum count, not just
-  // "non-empty"). Cache the result on the row so the "spin up" tooling and
-  // any future dashboard can read it without recomputing.
-  const missingJson = JSON.stringify(missing.map((f) => f.label));
+  const missingJson = JSON.stringify(missing.map((f) => ({ label: f.label, section: f.section, required: f.required })));
   const client2 = new Client({ connectionString: session.connectionString, ssl: { rejectUnauthorized: false } });
   await client2.connect();
   try {
@@ -45,8 +46,6 @@ exports.handler = async (event) => {
     await client2.end();
   }
 
-  // Keep Wayfinder's mapping row in sync so Keyona can see completeness
-  // across all businesses without logging into each one individually.
   await wayfinder
     .from("business_intake_instances")
     .update({ completeness_pct: pct, updated_at: new Date().toISOString() })
@@ -56,7 +55,7 @@ exports.handler = async (event) => {
     statusCode: 200,
     body: JSON.stringify({
       completenessPct: pct,
-      missing: missing.map((f) => ({ label: f.label, section: f.section })),
+      missing: missing.map((f) => ({ label: f.label, section: f.section, required: f.required })),
       readyToGraduate: pct === 100,
     }),
   };
