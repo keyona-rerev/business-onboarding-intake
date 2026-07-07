@@ -1,7 +1,13 @@
 const { Client } = require("pg");
+const { createClient } = require("@supabase/supabase-js");
 const { sessionFromEvent } = require("./_lib/auth");
 const { FIELDS, SOURCE_URL_KEYS, isValidUrl, CONTENT_NATURE_OPTIONS } = require("./_lib/fields");
 const { ensureSchema } = require("./_lib/schema-ensure");
+
+const wayfinder = createClient(
+  process.env.WAYFINDER_SUPABASE_URL,
+  process.env.WAYFINDER_SUPABASE_ANON_KEY
+);
 
 const EXTRACTION_PROMPT = `You are extracting structured business setup information from a raw, unstructured dump of text a business owner wrote about their business, audience, and content needs.
 
@@ -109,6 +115,14 @@ exports.handler = async (event) => {
     );
 
     const { rows } = await client.query("select * from intake_data where id = 1");
+
+    // Invalidate the dashboard cache — fields just changed, so the next
+    // dashboard read needs a live fetch to reflect it.
+    await wayfinder
+      .from("business_intake_instances")
+      .update({ cached_payload: null, updated_at: new Date().toISOString() })
+      .eq("id", session.businessId);
+
     return {
       statusCode: 200,
       body: JSON.stringify({ success: true, record: rows[0] }),
