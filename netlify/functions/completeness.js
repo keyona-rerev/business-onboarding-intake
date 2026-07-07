@@ -41,9 +41,11 @@ exports.handler = async (event) => {
     await client2.end();
   }
 
+  // Invalidate the dashboard cache too — this can run after a paste, and
+  // the pct/missing it just wrote are part of the cached payload.
   await wayfinder
     .from("business_intake_instances")
-    .update({ completeness_pct: pct, updated_at: new Date().toISOString() })
+    .update({ completeness_pct: pct, updated_at: new Date().toISOString(), cached_payload: null })
     .eq("id", session.businessId);
 
   return {
