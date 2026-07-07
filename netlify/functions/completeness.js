@@ -1,7 +1,7 @@
 const { Client } = require("pg");
 const { createClient } = require("@supabase/supabase-js");
 const { sessionFromEvent } = require("./_lib/auth");
-const { REQUIRED_FIELDS } = require("./_lib/fields");
+const { REQUIRED_FIELDS, isFieldSatisfied } = require("./_lib/fields");
 
 const wayfinder = createClient(
   process.env.WAYFINDER_SUPABASE_URL,
@@ -25,15 +25,14 @@ exports.handler = async (event) => {
     await client.end();
   }
 
-  const missing = REQUIRED_FIELDS.filter(
-    (f) => record[f.key] === null || record[f.key] === undefined || record[f.key] === ""
-  );
+  const missing = REQUIRED_FIELDS.filter((f) => !isFieldSatisfied(f, record[f.key]));
   const filledCount = REQUIRED_FIELDS.length - missing.length;
   const pct = Math.round((filledCount / REQUIRED_FIELDS.length) * 100);
 
-  // Deterministic, not AI-judged — a field either has a value or it doesn't.
-  // Cache the result on the row so the "spin up" tooling and any future
-  // dashboard can read it without recomputing.
+  // Deterministic, not AI-judged — a field either meets its bar or it
+  // doesn't (and for source_feeds, that bar is a minimum count, not just
+  // "non-empty"). Cache the result on the row so the "spin up" tooling and
+  // any future dashboard can read it without recomputing.
   const missingJson = JSON.stringify(missing.map((f) => f.label));
   const client2 = new Client({ connectionString: session.connectionString, ssl: { rejectUnauthorized: false } });
   await client2.connect();
