@@ -73,5 +73,11 @@ exports.handler = async (event) => {
     await client.end();
   }
 
+  // Invalidate the dashboard cache — the logo just changed.
+  await wayfinder
+    .from("business_intake_instances")
+    .update({ cached_payload: null, updated_at: new Date().toISOString() })
+    .eq("id", session.businessId);
+
   return { statusCode: 200, body: JSON.stringify({ success: true, logoUrl }) };
 };
