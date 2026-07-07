@@ -1,17 +1,17 @@
 const { Client } = require("pg");
+const { createClient } = require("@supabase/supabase-js");
 const { sessionFromEvent } = require("./_lib/auth");
-const { FIELDS, isFieldSatisfied } = require("./_lib/fields");
 const { ensureSchema } = require("./_lib/schema-ensure");
+const { buildDashboardPayload } = require("./_lib/build-payload");
 
-// Powers the post-login dashboard. Unlike completeness.js (which only ever
-// reports what's *missing*), this returns every field's actual value so the
-// dashboard can show clients what's already been captured, not just gaps.
-exports.handler = async (event) => {
-  const session = sessionFromEvent(event);
-  if (!session) {
-    return { statusCode: 401, body: JSON.stringify({ error: "Not logged in" }) };
-  }
+const wayfinder = createClient(
+  process.env.WAYFINDER_SUPABASE_URL,
+  process.env.WAYFINDER_SUPABASE_ANON_KEY
+);
 
+// The real query, straight to this business's own Railway Postgres.
+// Also repopulates the Wayfinder cache so the next cache-first read is fast.
+async function liveFetch(session) {
   const client = new Client({ connectionString: session.connectionString, ssl: { rejectUnauthorized: false } });
   await client.connect();
 
@@ -24,51 +24,47 @@ exports.handler = async (event) => {
     await client.end();
   }
 
-  const sectionOrder = [];
-  const sectionMap = {};
+  const payload = buildDashboardPayload(record, session.businessName);
 
-  for (const f of FIELDS) {
-    if (!sectionMap[f.section]) {
-      sectionMap[f.section] = { name: f.section, fields: [] };
-      sectionOrder.push(f.section);
-    }
-    const value = record[f.key] || null;
-    const filled = isFieldSatisfied(f, value);
-    sectionMap[f.section].fields.push({
-      key: f.key,
-      label: f.label,
-      required: f.required,
-      value,
-      filled,
-    });
+  await wayfinder
+    .from("business_intake_instances")
+    .update({ cached_payload: payload })
+    .eq("id", session.businessId);
+
+  return payload;
+}
+
+// Powers the post-login dashboard. Cache-first: reads the last-known
+// payload from Wayfinder instead of round-tripping to Railway Postgres on
+// every single page load (that round trip is what caused the visible
+// load flicker). Every write endpoint invalidates this cache the moment it
+// changes anything, so a cache hit here always means "nothing's changed
+// since the last real read," not "possibly stale forever."
+//
+// Pass ?fresh=true to skip the cache and force a live read — used by the
+// dashboard for its background revalidation after the fast paint.
+exports.handler = async (event) => {
+  const session = sessionFromEvent(event);
+  if (!session) {
+    return { statusCode: 401, body: JSON.stringify({ error: "Not logged in" }) };
   }
 
-  // Section completion counts every field in the section, required and
-  // optional alike — matches completeness.js. A section isn't "done" just
-  // because its required fields are filled; the optional ones count too.
-  const sections = sectionOrder.map((name) => {
-    const s = sectionMap[name];
-    const filledCount = s.fields.filter((f) => f.filled).length;
-    const pct = Math.round((filledCount / s.fields.length) * 100);
-    return { name: s.name, fields: s.fields, sectionPct: pct };
-  });
+  const forceFresh = event.queryStringParameters && event.queryStringParameters.fresh === "true";
 
-  return {
-    statusCode: 200,
-    body: JSON.stringify({
-      businessName: record.business_name || session.businessName,
-      status: record.status,
-      completenessPct: record.completeness_pct || 0,
-      websiteUrl: record.website_url || null,
-      brand: {
-        backgroundColor: record.color_background || null,
-        accentColor: record.color_accent || null,
-        highlightColor: record.color_highlight || null,
-        sparingAccentColor: record.color_sparing_accent || null,
-        logoUrl: record.logo_url || null,
-        fontNames: record.font_names || null,
-      },
-      sections,
-    }),
-  };
+  if (!forceFresh) {
+    const { data, error } = await wayfinder
+      .from("business_intake_instances")
+      .select("cached_payload")
+      .eq("id", session.businessId)
+      .single();
+
+    if (!error && data && data.cached_payload) {
+      return { statusCode: 200, body: JSON.stringify(data.cached_payload) };
+    }
+    // No cache yet (first load ever for this business) — fall through to
+    // a live fetch, which also populates the cache for next time.
+  }
+
+  const payload = await liveFetch(session);
+  return { statusCode: 200, body: JSON.stringify(payload) };
 };
