@@ -35,7 +35,11 @@
   .overview .pct-sub { font-size: 13px; color: var(--body-text); margin-top: 2px; }
   .bar-bg { background: #e9edee; border-radius: 8px; height: 12px; overflow: hidden; margin: 14px 0 6px; }
   .bar-fill { background: linear-gradient(90deg, var(--accent-a), var(--accent-b)); height: 100%; transition: width 0.4s ease, opacity 0.2s ease; border-radius: 8px; }
-  .overview .add-more { display: inline-block; margin-top: 10px; font-size: 13px; font-weight: 600; color: var(--accent-b); text-decoration: none; }
+  .overview .add-more {
+    display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; font-size: 13px; font-weight: 600;
+    color: var(--accent-b); background: none; border: none; padding: 0; cursor: pointer; font-family: inherit;
+  }
+  .overview .add-more:hover { text-decoration: underline; }
 
   /* Brand summary row — shown once brand is fully configured, replaces the full panel */
   .brand-panel-summary {
@@ -193,6 +197,12 @@
   .modal-close { background: #f0f0f0; border: none; border-radius: 50%; width: 32px; height: 32px; font-size: 15px; cursor: pointer; color: var(--body-text); }
   .modal-box textarea.field-edit-input { min-height: 200px; }
 
+  @keyframes pulseGlow {
+    0%, 100% { box-shadow: 0 0 0 3px rgba(224,164,88,0.14); }
+    50% { box-shadow: 0 0 0 8px rgba(224,164,88,0.4); }
+  }
+  .pulse-highlight { animation: pulseGlow 1.4s ease; }
+
   .hidden { display: none; }
 </style>
 </head>
@@ -204,7 +214,6 @@
         <h1 id="bizName">Your Dashboard</h1>
       </div>
       <div class="top-actions">
-        <a href="/intake.html">Add more info</a>
         <a href="#" id="logoutLink">Log out</a>
       </div>
     </header>
@@ -213,7 +222,7 @@
       <div class="pct" id="pctLabel">Loading...</div>
       <div class="pct-sub" id="pctSub">&nbsp;</div>
       <div class="bar-bg"><div class="bar-fill" id="barFill" style="width:0%; opacity:0"></div></div>
-      <a class="add-more" href="/intake.html">Fill in what's missing &rarr;</a>
+      <button type="button" class="add-more" id="scrollToMissingBtn">&darr; Fill in what's missing</button>
     </div>
 
     <!-- Shown once brand (all 4 colors + logo) is fully configured — a
@@ -427,9 +436,6 @@
       if (brand.highlightColor) document.getElementById("colorHighlightInput").value = brand.highlightColor;
       if (brand.sparingAccentColor) document.getElementById("colorSparingAccentInput").value = brand.sparingAccentColor;
 
-      // Once brand is fully set (all 4 colors + logo), collapse the whole
-      // panel into a one-line summary — it's a set-once thing, it shouldn't
-      // permanently occupy the top of every visit once it's done its job.
       const configured = !!(brand.logoUrl && brand.backgroundColor && brand.accentColor && brand.highlightColor && brand.sparingAccentColor);
       document.getElementById("collapseBrandBtn").classList.toggle("hidden", !configured);
 
@@ -563,6 +569,20 @@
 
     document.querySelectorAll(".view-toggle button").forEach((btn) => {
       btn.addEventListener("click", () => switchView(btn.dataset.view));
+    });
+
+    // "Fill in what's missing" no longer goes to a separate page — it
+    // switches to List (the view with actual field cards to scroll
+    // through) and scrolls straight to the first unfilled one.
+    document.getElementById("scrollToMissingBtn").addEventListener("click", () => {
+      if (currentView !== "list") switchView("list");
+      requestAnimationFrame(() => {
+        const target = document.querySelector(".field-card--empty");
+        if (!target) return;
+        target.scrollIntoView({ behavior: "smooth", block: "center" });
+        target.classList.add("pulse-highlight");
+        setTimeout(() => target.classList.remove("pulse-highlight"), 1400);
+      });
     });
 
     function updateUnsavedBar() {
